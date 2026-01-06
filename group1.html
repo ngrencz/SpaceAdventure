@@ -38,18 +38,24 @@
     </div>
     <a href="airlock.html" class="backlink">← Back to Control Panel</a>
   </div>
-  <script>
-    // ---- START Supabase Setup ----
-    const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';      // <-- Replace with your Supabase URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';                      // <-- Replace with your Supabase anon key
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    // ---- END Supabase Setup ----
 
-    // Check if already completed
+  <script>
+    const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
     window.onload = async function() {
-      let { data } = await supabase.from('airlock_status').select('done').eq('group', 'group1').single();
+      let { data, error } = await supabase
+        .from('airlock_status')
+        .select('done')
+        .eq('group', 'group1')
+        .single();
       if (data && data.done) {
         document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+      }
+      if (error) {
+        document.getElementById("feedback").textContent = "Supabase error: " + error.message;
+        console.error("Supabase error:", error);
       }
     }
 
@@ -57,9 +63,15 @@
       var entry = document.getElementById("ans").value.replace(/\s/g,"");
       if (entry === "2,-3,1") {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
-        // Supabase: upsert(lock status)
-        await supabase.from('airlock_status')
+        const { error, data } = await supabase
+          .from('airlock_status')
           .upsert([{ group: 'group1', done: true }]);
+        if (error) {
+          document.getElementById("feedback").textContent += "\nError: " + error.message;
+          console.error("Supabase error:", error);
+        } else {
+          console.log("Supabase upsert OK", data);
+        }
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
