@@ -9,9 +9,9 @@
     .container { max-width:650px; margin:40px auto; background:#233140ee; border-radius:10px; padding:28px 28px 38px 28px; box-shadow:0 0 12px #252545; }
     .heading { font-size:1.7em; color:#b2e2ff; margin-bottom:20px; text-align:center; }
     .overlay { background:rgba(16, 16, 24, 0.89); padding:19px 24px; border-radius:8px; margin:0 auto; max-width:500px; box-shadow:0 2px 8px #18181844;}
-    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:90px; font-size:1em; text-align: center; margin-right: 6px;}
-    #unlockBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
-    #unlockBtn:hover { background:#3355cc; }
+    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:90px; font-size:1em; text-align:center; margin-right: 6px;}
+    #actionBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
+    #actionBtn:hover { background:#3355cc; }
     .math { font-family:'Consolas', monospace; color:#aaf; }
     .feedback { color:#6effc1; margin-top:14px; font-weight:bold; }
     .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
@@ -25,7 +25,7 @@
     <div class="overlay">
       <div class="clue"></div>
       <ul></ul>
-      <button id="unlockBtn">Unlock</button>
+      <button id="actionBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
     <a href="index.html" class="backlink">← Back to Control Panel</a>
@@ -42,6 +42,7 @@
       task1: {
         heading: "Group 3: Slope-Intercept Cipher",
         clue: 'Write each equation below in <span class="math">y = mx + b</span> form.<br><span style="font-size:0.93em;color:#7fc6fe">Lower case, no spaces.</span>',
+        button: "Unlock",
         equations: [
           { eq: "Slope: 5, y-intercept: -2", ans: "y=5x-2" },
           { eq: "y-intercept: 4, Slope: -1", ans: ["y=-1x+4", "y=-x+4"] },
@@ -59,6 +60,7 @@
           <li><strong>*</strong> infinitely many solutions</li>
         </ul>
         <span style="font-size:0.93em;color:#7fc6fe">Simplify each equation and determine its solution count.</span>`,
+        button: "Solve",
         equations: [
           // Answer explanations included in comments
           { eq: "x + y = 2", ans: "*" },            // Infinite: line in xy-plane
@@ -67,6 +69,18 @@
           { eq: "2x + 3y = 2x + 4", ans: "1" },     // y = 4/3, only one value for y (x cancels out)
           { eq: "5x - 2y = 5x + 6", ans: "1" }      // y = -3, only one value for y (x cancels out)
         ]
+      },
+      task3: {
+        heading: "Group 3: Hull Repair Coordination (Dorsal Array)",
+        clue: 'Solve each system of equations to find the intersection point (x, y). Type the answer as x,y in each box.<br><span style="font-size:0.95em;color:#7fc6fe">(Example: for x=2, y=5, enter 2,5)</span>',
+        button: "Repair",
+        equations: [
+          { eq: "System 1:<br>y = 2x + 5<br>y = -x - 1", ans: " -2,1" },
+          { eq: "System 2:<br>y = x + 3<br>y = 4x - 6", ans: "3,6" },
+          { eq: "System 3:<br>y = 0.5x - 2<br>y = -x + 4", ans: "4,0" },
+          { eq: "System 4:<br>2x - 3y = -1<br>x + y = 5", ans: "2,3" },
+          { eq: "System 5:<br>x - 2y = 1<br>3x + y = 14", ans: "4,5" }
+        ]
       }
     };
 
@@ -74,6 +88,7 @@
       const task = TASKS[taskId] || TASKS["task1"];
       document.querySelector('.heading').textContent = task.heading;
       document.querySelector('.clue').innerHTML = "<strong>Clue:</strong> " + task.clue;
+      document.getElementById("actionBtn").textContent = task.button;
 
       const ul = document.querySelector('ul');
       ul.innerHTML = "";
@@ -95,10 +110,10 @@
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
-          document.getElementById("unlockBtn").disabled = true;
+          document.getElementById("actionBtn").disabled = true;
         } else {
           document.getElementById("feedback").textContent = "";
-          document.getElementById("unlockBtn").disabled = false;
+          document.getElementById("actionBtn").disabled = false;
         }
         if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -115,25 +130,31 @@
       checkCompleted();
     });
 
-    document.getElementById("unlockBtn").onclick = async function() {
+    document.getElementById("actionBtn").onclick = async function() {
       const task = TASKS[taskId] || TASKS["task1"];
       let correct = true;
 
       task.equations.forEach((e, i) => {
-        const userInput = document.getElementById("ans"+(i+1)).value.trim().replace(/\s+/g, '').toLowerCase();
-
-        if(Array.isArray(e.ans)) {
-          // Accept any valid answer from the list (task 1, problem 2)
-          const acceptable = e.ans.map(ansStr => ansStr.replace(/\s+/g, '').toLowerCase());
-          if(!acceptable.includes(userInput)) correct = false;
+        let answer = document.getElementById("ans"+(i+1)).value.trim();
+        if (taskId === "task3") {
+          // For intersection, strip spaces and parentheses (accept negative zero as "-0")
+          answer = answer.replace(/\s+/g, '').replace(/[()]/g, '').replace(/^-0,/, '0,').replace(/,0$/, ',0');
         } else {
-          if (userInput !== e.ans.replace(/\s+/g, '').toLowerCase()) correct = false;
+          answer = answer.replace(/\s+/g, '').toLowerCase();
+        }
+        let target;
+        if (Array.isArray(e.ans)) {
+          target = e.ans.map(s => s.replace(/\s+/g,'').toLowerCase());
+          if (!target.includes(answer.toLowerCase())) correct = false;
+        } else {
+          target = e.ans.replace(/\s+/g, '');
+          if (answer.toLowerCase() !== target.toLowerCase()) correct = false;
         }
       });
 
       if (correct) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
-        document.getElementById("unlockBtn").disabled = true;
+        document.getElementById("actionBtn").disabled = true;
         try {
           const { error, data } = await client
             .from('airlock_status')
