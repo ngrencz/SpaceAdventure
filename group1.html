@@ -54,6 +54,7 @@
           .select('done')
           .eq('group', 'group1')
           .eq('hour', hourValue)
+          .eq('task', taskId)
           .maybeSingle();
         console.log("Status data:", data);
         if (data && data.done) {
