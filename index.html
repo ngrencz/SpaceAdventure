@@ -88,69 +88,74 @@
         <option value="5th">5th Hour</option>
         <option value="6th">6th Hour</option>
         <option value="7th">7th Hour</option>
-  </select>
-</div>
-
+      </select>
+    </div>
     <a href="airlock.html" class="biglink" id="day1link">Task 1 – Enter the Airlock</a>
-    <a href="compartment.html" class="biglink">Task 2 – Find Damaged Compartment</a>
+    <div id="task2div"></div> <!-- Task 2 will be injected here -->
     <a href="status.html" class="biglink">Projector Status Panel</a>
   </div>
   <script>
-  // Save selected hour to localStorage and restore selection on reload
-  const hourSelect = document.getElementById("hourSelect");
-  hourSelect.addEventListener("change", function() {
-    localStorage.setItem("classHour", this.value);
-  });
-
-  // When page loads, restore the previous hour choice
-  window.addEventListener("DOMContentLoaded", function() {
-    const storedHour = localStorage.getItem("classHour");
-    if (storedHour) {
-      hourSelect.value = storedHour;
-    }
-  });
-</script>
-
+    // Hour selection setup
+    const hourSelect = document.getElementById("hourSelect");
+    hourSelect.addEventListener("change", function() {
+      localStorage.setItem("classHour", this.value);
+    });
+    window.addEventListener("DOMContentLoaded", function() {
+      const storedHour = localStorage.getItem("classHour");
+      if (storedHour) {
+        hourSelect.value = storedHour;
+      }
+    });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
-    const hourValue = localStorage.getItem("classHour") || "";
-    
+
     async function checkDay1Complete() {
-  const hourValue = localStorage.getItem("classHour") || "";
-  const { data, error } = await client
-    .from('airlock_status')
-    .select('group,done')
-    .eq('hour', hourValue);
+      const hourValue = localStorage.getItem("classHour") || "";
+      const { data, error } = await client
+        .from('airlock_status')
+        .select('group,done')
+        .eq('hour', hourValue);
 
-  if (error) {
-    console.error('Supabase error:', error);
-    return;
-  }
-  const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
-  const allDone = expectedGroups.every(grp =>
-    data.find(d => d.group === grp && d.done)
-  );
+      if (error) {
+        console.error('Supabase error:', error);
+        return;
+      }
+      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
+      const allDone = expectedGroups.every(grp =>
+        data.find(d => d.group === grp && d.done)
+      );
 
-  // Turn Day 1 link green and add checkmark if all groups are done
-  const day1 = document.getElementById("day1link");
-  // Remove any previous checkmark
-  const prevCheck = day1.querySelector(".checkmark");
-  if (prevCheck) day1.removeChild(prevCheck);
+      // Task 1 dynamic color/check
+      const day1 = document.getElementById("day1link");
+      const prevCheck = day1.querySelector(".checkmark");
+      if (prevCheck) day1.removeChild(prevCheck);
 
-  if (allDone) {
-    day1.classList.add("completed");
-    // Add checkmark
-    const check = document.createElement("span");
-    check.className = "checkmark";
-    check.textContent = "✓";
-    day1.appendChild(check);
-  } else {
-    day1.classList.remove("completed");
-  }
-}
+      if (allDone) {
+        day1.classList.add("completed");
+        const check = document.createElement("span");
+        check.className = "checkmark";
+        check.textContent = "✓";
+        day1.appendChild(check);
+      } else {
+        day1.classList.remove("completed");
+      }
+
+      // Task 2 dynamic show/hide
+      const task2div = document.getElementById("task2div");
+      task2div.innerHTML = ""; // Clear previous content
+      if (allDone) {
+        const link = document.createElement("a");
+        link.href = "compartment.html";
+        link.className = "biglink";
+        link.id = "task2link";
+        link.textContent = "Task 2 – Find Damaged Compartment";
+        task2div.appendChild(link);
+      }
+    }
 
     window.addEventListener('DOMContentLoaded', checkDay1Complete);
     setInterval(checkDay1Complete, 2000);
