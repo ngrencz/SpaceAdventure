@@ -21,18 +21,10 @@
 </head>
 <body>
   <div class="container">
-    <div class="heading">Group 3: Slope-Intercept Cipher</div>
+    <div class="heading"></div>
     <div class="overlay">
-      <div>
-        <strong>Clue:</strong> Write each equation below in <span class="math">y = mx + b</span> form (lower case, no spaces).
-      </div>
-      <ul>
-        <li>Slope: 5, y-intercept: -2 → <input type="text" id="ans1" maxlength="15"></li>
-        <li>y-intercept: 4, Slope: -1 → <input type="text" id="ans2" maxlength="15"></li>
-        <li>Slope: 0.5, y-intercept: -1.4 → <input type="text" id="ans3" maxlength="15"></li>
-        <li>Slope: -2.1, y-intercept: -0.4 → <input type="text" id="ans4" maxlength="15"></li>
-        <li>y-intercept: 1, Slope: 8/5 → <input type="text" id="ans5" maxlength="15"></li>
-      </ul>
+      <div class="clue"></div>
+      <ul></ul>
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
@@ -46,6 +38,52 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+    const TASKS = {
+      task1: {
+        heading: "Group 3: Slope-Intercept Cipher",
+        clue: 'Write each equation below in <span class="math">y = mx + b</span> form.<br><span style="font-size:0.93em;color:#7fc6fe">Lower case, no spaces.</span>',
+        equations: [
+          { eq: "Slope: 5, y-intercept: -2", ans: "y=5x-2" },
+          { eq: "y-intercept: 4, Slope: -1", ans: ["y=-1x+4", "y=-x+4"] },
+          { eq: "Slope: 0.5, y-intercept: -1.4", ans: "y=0.5x-1.4" },
+          { eq: "Slope: -2.1, y-intercept: -0.4", ans: "y=-2.1x-0.4" },
+          { eq: "y-intercept: 1, Slope: 8/5", ans: "y=8/5x+1" }
+        ]
+      },
+      task2: {
+        heading: "Group 3: Equation Solution Counter",
+        clue: `For each equation in x and y, decide:<br>
+        <ul style="margin-top:6px">
+          <li><strong>0</strong> no solution</li>
+          <li><strong>1</strong> one solution</li>
+          <li><strong>*</strong> infinitely many solutions</li>
+        </ul>
+        <span style="font-size:0.93em;color:#7fc6fe">Simplify each equation and determine its solution count.</span>`,
+        equations: [
+          // Answer explanations included in comments
+          { eq: "x + y = 2", ans: "*" },            // Infinite: line in xy-plane
+          { eq: "0x + 0y = 7", ans: "0" },          // No solution: 0=7 contradiction
+          { eq: "y - y = 0", ans: "*" },            // Infinite: always 0=0
+          { eq: "2x + 3y = 2x + 4", ans: "1" },     // y = 4/3, only one value for y (x cancels out)
+          { eq: "5x - 2y = 5x + 6", ans: "1" }      // y = -3, only one value for y (x cancels out)
+        ]
+      }
+    };
+
+    function renderTaskContent() {
+      const task = TASKS[taskId] || TASKS["task1"];
+      document.querySelector('.heading').textContent = task.heading;
+      document.querySelector('.clue').innerHTML = "<strong>Clue:</strong> " + task.clue;
+
+      const ul = document.querySelector('ul');
+      ul.innerHTML = "";
+      task.equations.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="math">${e.eq}</span> &rarr; <input type="text" id="ans${i+1}" maxlength="20">`;
+        ul.appendChild(li);
+      });
+    }
+
     async function checkCompleted() {
       try {
         let { data, error } = await client
@@ -57,8 +95,10 @@
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+          document.getElementById("unlockBtn").disabled = true;
         } else {
           document.getElementById("feedback").textContent = "";
+          document.getElementById("unlockBtn").disabled = false;
         }
         if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -69,16 +109,31 @@
         console.error("JS Error (on load):", err);
       }
     }
-    window.addEventListener('DOMContentLoaded', checkCompleted);
+
+    window.addEventListener('DOMContentLoaded', function() {
+      renderTaskContent();
+      checkCompleted();
+    });
 
     document.getElementById("unlockBtn").onclick = async function() {
-      var a1 = document.getElementById("ans1").value.trim().toLowerCase();
-      var a2 = document.getElementById("ans2").value.trim().toLowerCase();
-      var a3 = document.getElementById("ans3").value.trim().toLowerCase();
-      var a4 = document.getElementById("ans4").value.trim().toLowerCase();
-      var a5 = document.getElementById("ans5").value.trim().toLowerCase();
-      if (a1 === "y=5x-2" && (a2 === "y=-1x+4" || a2 === "y=-x+4") && a3 === "y=0.5x-1.4" && a4 === "y=-2.1x-0.4" && a5 === "y=8/5x+1") {
+      const task = TASKS[taskId] || TASKS["task1"];
+      let correct = true;
+
+      task.equations.forEach((e, i) => {
+        const userInput = document.getElementById("ans"+(i+1)).value.trim().replace(/\s+/g, '').toLowerCase();
+
+        if(Array.isArray(e.ans)) {
+          // Accept any valid answer from the list (task 1, problem 2)
+          const acceptable = e.ans.map(ansStr => ansStr.replace(/\s+/g, '').toLowerCase());
+          if(!acceptable.includes(userInput)) correct = false;
+        } else {
+          if (userInput !== e.ans.replace(/\s+/g, '').toLowerCase()) correct = false;
+        }
+      });
+
+      if (correct) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        document.getElementById("unlockBtn").disabled = true;
         try {
           const { error, data } = await client
             .from('airlock_status')
@@ -96,7 +151,7 @@
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
-    }
+    };
   </script>
 </body>
 </html>
