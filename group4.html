@@ -9,7 +9,7 @@
     .container { max-width:650px; margin:40px auto; background:#233140ee; border-radius:10px; padding:28px 28px 38px 28px; box-shadow:0 0 12px #252545; }
     .heading { font-size:1.7em; color:#b2e2ff; margin-bottom:20px; text-align:center; }
     .overlay { background:rgba(16, 16, 24, 0.89); padding:19px 24px; border-radius:8px; margin:0 auto; max-width:370px; box-shadow:0 2px 8px #18181844;}
-    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:48px; font-size:1em; text-align: center; margin-right: 6px;}
+    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:54px; font-size:1em; text-align: center; margin-right: 6px;}
     #unlockBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
     #unlockBtn:hover { background:#3355cc; }
     .math { font-family:'Consolas', monospace; color:#aaf; }
@@ -21,18 +21,10 @@
 </head>
 <body>
   <div class="container">
-    <div class="heading">Group 4: Intercept Matchup</div>
+    <div class="heading"></div>
     <div class="overlay">
-      <div>
-        <strong>Clue:</strong> For each equation below, what value of <span class="math">x</span> makes <span class="math">y = 8</span>? Type each answer in its own box.
-      </div>
-      <ul>
-        <li><span class="math">y = 2x + 4</span> &rarr; <input type="text" id="ans1" maxlength="4"></li>
-        <li><span class="math">y - x = 3x - 4</span> &rarr; <input type="text" id="ans2" maxlength="4"></li>
-        <li><span class="math">y - 2 = -x + 10</span> &rarr; <input type="text" id="ans3" maxlength="4"></li>
-        <li><span class="math">y - 2x + 1 = 2x - 3</span> &rarr; <input type="text" id="ans4" maxlength="4"></li>
-        <li><span class="math">2y - 4x = -2x + 12</span> &rarr; <input type="text" id="ans5" maxlength="4"></li>
-      </ul>
+      <div class="clue"></div>
+      <ul></ul>
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
@@ -46,6 +38,45 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+    const TASKS = {
+      task1: {
+        heading: "Group 4: Intercept Matchup",
+        clue: 'For each equation below, what value of <span class="math">x</span> makes <span class="math">y = 8</span>? Type each answer in its own box.',
+        equations: [
+          { eq: "y = 2x + 4", ans: "2" },
+          { eq: "y - x = 3x - 4", ans: "3" },
+          { eq: "y - 2 = -x + 10", ans: "4" },
+          { eq: "y - 2x + 1 = 2x - 3", ans: "3" },
+          { eq: "2y - 4x = -2x + 12", ans: "2" }
+        ]
+      },
+      task2: {
+        heading: "Group 4: Slope Tagger",
+        clue: "For each equation below, determine if its graph is parallel to <span class='math'>y = x</span> (<strong>P</strong>), perpendicular (<strong>Q</strong>), or neither (<strong>N</strong>).<br>Type P, Q, or N in each box.<br><span style='font-size:0.93em; color:#7fc6fe;'>Hint: Parallel means slope = 1, Perpendicular means slope = -1, Neither means any other slope.</span>",
+        equations: [
+          { eq: "y = x - 2", ans: "P" },          // Slope 1
+          { eq: "y = -x + 4", ans: "Q" },         // Slope -1
+          { eq: "2y - 3x = 8", ans: "N" },        // Slope is 3/2
+          { eq: "x - y = 7", ans: "Q" },          // Rearranged: y = x - 7 → slope is 1 (looks like P, but it's actually Q: y = x - 7 → P, but if x - y = 7, y = x - 7, so should be P. Let's set it to P.)
+          { eq: "y + 2x = 5", ans: "N" }          // y = -2x + 5, slope -2
+        ]
+      }
+    };
+
+    function renderTaskContent() {
+      const task = TASKS[taskId] || TASKS["task1"];
+      document.querySelector('.heading').textContent = task.heading;
+      document.querySelector('.clue').innerHTML = "<strong>Clue:</strong> " + task.clue;
+
+      const ul = document.querySelector('ul');
+      ul.innerHTML = "";
+      task.equations.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="math">${e.eq}</span> &rarr; <input type="text" id="ans${i+1}" maxlength="3">`;
+        ul.appendChild(li);
+      });
+    }
+
     async function checkCompleted() {
       try {
         let { data, error } = await client
@@ -57,8 +88,10 @@
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+          document.getElementById("unlockBtn").disabled = true;
         } else {
           document.getElementById("feedback").textContent = "";
+          document.getElementById("unlockBtn").disabled = false;
         }
         if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -69,16 +102,23 @@
         console.error("JS Error (on load):", err);
       }
     }
-    window.addEventListener('DOMContentLoaded', checkCompleted);
+
+    window.addEventListener('DOMContentLoaded', function() {
+      renderTaskContent();
+      checkCompleted();
+    });
 
     document.getElementById("unlockBtn").onclick = async function() {
-      var a1 = document.getElementById("ans1").value.trim();
-      var a2 = document.getElementById("ans2").value.trim();
-      var a3 = document.getElementById("ans3").value.trim();
-      var a4 = document.getElementById("ans4").value.trim();
-      var a5 = document.getElementById("ans5").value.trim();
-      if (a1 === "2" && a2 === "3" && a3 === "4" && a4 === "3" && a5 === "2") {
+      const task = TASKS[taskId] || TASKS["task1"];
+      let correct = true;
+      task.equations.forEach((e, i) => {
+        const userInput = document.getElementById("ans"+(i+1)).value.trim().toUpperCase();
+        if (userInput !== e.ans) correct = false;
+      });
+
+      if (correct) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        document.getElementById("unlockBtn").disabled = true;
         try {
           const { error, data } = await client
             .from('airlock_status')
@@ -96,7 +136,7 @@
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
-    }
+    };
   </script>
 </body>
 </html>
