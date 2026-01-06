@@ -88,6 +88,13 @@
         document.getElementById("feedback").textContent = "Try again.";
       }
     }
+    let { data, error } = await client
+  .from('airlock_status')
+  .select('done')
+  .eq('group', 'group1')
+  .single();
+console.log("Supabase initial data on load:", data);
+console.log("Supabase error on load:", error);
   </script>
 </body>
 </html>
