@@ -193,6 +193,7 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    let overlayPersist = false; 
     // Group clues (customize as desired!)
     const CLUES = [
       "Aft Section",      // Group 1
@@ -273,18 +274,30 @@
       if (doneCount === 5) {
         if(currentTask === "task1"){
           overlay.style.display = "flex";
+          overlayPersist = true;
           accessText.innerHTML = "Access Granted!<br>All security segments unlocked.<br><br>";
           setTimeout(() => {
             overlay.style.display = "none";
+            overlayPersist = false;
             switchToTask2();
           }, 10000); // After overlay, go to next task
         } else if(currentTask === "task2"){
           overlay.style.display = "flex";
-          accessText.innerHTML = "<span style='font-size:1.08em;color:#f7fc7e;'>Structural Lockdown Cleared!<br>All damage containment tasks complete.<br><br>Outpost secured.</span>";
-          setTimeout(() => overlay.style.display = "none", 8000);
+          overlayPersist = true;
+          accessText.innerHTML = "<span style='font-size:1.14em;color:#f7fc7e;'>Damage Located!</span><br><br>";
+          for(let i=0; i < CLUES.length; i++){
+            accessText.innerHTML += `<span style="font-size:0.95em;color:#84ffc5;">${GROUP_LABELS[i]}: ${CLUES[i]}</span><br>`;
+          }
+          accessText.innerHTML += `<br><span style="font-size:1.1em;color:#56d1e7;font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
+          setTimeout(() => {
+            overlay.style.display = "none";
+            overlayPersist = false;
+          }, 10000);
         }
       } else {
-        overlay.style.display = "none";
+        if (!overlayPersist) {
+          overlay.style.display = "none";
+        }
       }
     }
 
