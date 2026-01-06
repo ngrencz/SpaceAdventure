@@ -91,7 +91,6 @@
     <div class="segment" id="stat4">Group 4</div>
     <div class="segment" id="stat5">Group 5</div>
   </div>
-  <!-- CLUE Panel -->
   <div id="cluePanel" class="clue-panel">
     <div class="clue-title">Clues Revealed:</div>
     <div id="clueList" class="clue-text-list"></div>
@@ -114,8 +113,9 @@
     const GROUP_LABELS = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
     // List of tasks that reveal clues
     const CLUE_TASKS = ["task2"]; // add future clue-bearing tasks here!
-    // Only show/track the most recent (max task) completed for the current hour.
     let overlayPersist = false;
+    let lastOverlayTaskHour = null;
+    let lastOverlayTaskShown = null; // The task for which the overlay was last shown
     let previousColor = "";
     let hourValue = localStorage.getItem("classHour") || "";
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
@@ -147,13 +147,11 @@
 
     // Finds the highest completed task for this hour
     async function findMostRecentTask() {
-      // Get all entries for current hour
       const { data, error } = await client
         .from('airlock_status')
         .select('task,group,done')
         .eq('hour', hourValue);
 
-      // Find tasks for which ALL groups are done
       let completedTasks = {};
       for (let i = 1; i <= 5; i++) {
         (data || []).forEach(row => {
@@ -162,9 +160,7 @@
           }
         });
       }
-      // Find max completed (taskN with 5 groups done)
-      let mostRecent = "task1";
-      let maxN = 1;
+      let mostRecent = "task1", maxN = 1;
       Object.keys(completedTasks).forEach(task => {
         if (completedTasks[task] >= 5) {
           let n = Number(task.replace("task", ""));
@@ -178,10 +174,9 @@
     }
 
     async function showStatus() {
-      // Auto-select most recently finished task for this hour.
       currentTask = await findMostRecentTask();
 
-      // Query group status for this hour/latest task ONLY
+      // Query for ONLY the most recent completed task
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done,task')
@@ -204,6 +199,7 @@
           el.innerHTML = GROUP_LABELS[i-1];
         }
       }
+
       // CLUE PANEL logic
       const cluePanel = document.getElementById("cluePanel");
       const clueList = document.getElementById("clueList");
@@ -233,9 +229,12 @@
         previousColor = colorClass;
       }
 
-      // OVERLAY logic (only show once for the most recent task)
+      // OVERLAY logic: only show ONCE per completed task per hour
       const overlay = document.getElementById("overlayAccess");
-      if (doneCount === 5 && !overlayPersist) {
+      if (doneCount === 5 && !overlayPersist && (lastOverlayTaskHour !== hourValue || lastOverlayTaskShown !== currentTask)) {
+        overlayPersist = true;
+        lastOverlayTaskHour = hourValue;
+        lastOverlayTaskShown = currentTask;
         if(currentTask === "task1"){
           updateOverlay(
             true,
@@ -244,6 +243,7 @@
           );
           setTimeout(() => {
             document.getElementById("mainTitle").innerHTML = "Outpost IX Damage Panel<br>Task 2";
+            overlayPersist = false;
           }, 10000);
         } else if(CLUE_TASKS.includes(currentTask)){
           let cluesHtml = "<span style='font-size:1.14em;color:#f7fc7e;'>Damage Located!</span><br><br>";
@@ -252,9 +252,13 @@
           }
           cluesHtml += `<br><span style="font-size:1.1em;color:#56d1e7;font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
           updateOverlay(true, cluesHtml, 10000);
+          setTimeout(() => {
+            overlayPersist = false;
+          }, 10000);
         }
       }
-      if (doneCount < 5 && !overlayPersist) {
+      // Only forcibly hide overlay if not overlayPersist and not completed
+      if ((doneCount < 5) && !overlayPersist) {
         updateOverlay(false);
       }
     }
@@ -276,9 +280,11 @@
         await client
           .from('airlock_status')
           .delete()
-          .eq('hour', hourValue); // only clear for current hour!
+          .eq('hour', hourValue);
         setTimeout(showStatus, 1000);
         overlayPersist = false;
+        lastOverlayTaskHour = null;
+        lastOverlayTaskShown = null;
         document.getElementById("mainTitle").innerHTML = "Outpost IX Airlock<br>Status Panel";
         document.getElementById("cluePanel").style.display = "none";
         document.getElementById("clueList").innerHTML = "";
