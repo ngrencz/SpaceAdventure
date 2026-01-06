@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Asteroid Outpost Escape Room</title>
+  <meta name="viewport" content="width=900">
+  <style>
+    body {
+      font-family: 'Orbitron', Arial, sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      margin: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #242424cc;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px #222;
+    }
+    .header {
+      background: #222;
+      padding: 16px 20px;
+      font-size: 1.5em;
+      letter-spacing: 2px;
+      border-bottom: 2px solid #666;
+    }
+    .story {
+      background-image: url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=900&q=80');
+      background-size: cover;
+      background-position: center;
+      padding: 26px;
+      border-bottom: 2px solid #444;
+    }
+    .challenge {
+      padding: 18px 28px;
+      margin: 18px 0;
+      background: #1a1a1a;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #111 inset;
+      background-image: url('https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=900&q=80');
+      background-size: cover;
+      background-blend-mode: multiply;
+      color: #e0e0e0;
+      position: relative;
+    }
+    .overlay {
+      background: rgba(20, 20, 28, 0.88);
+      padding: 16px 18px;
+      border-radius: 8px;
+      max-width: 340px;
+      margin: 0 auto;
+    }
+    input {
+      padding: 8px;
+      font-size: 1em;
+      margin-top: 8px;
+      background: #222;
+      color: #eee;
+      border: 1px solid #666;
+      border-radius: 5px;
+      width: 80%;
+    }
+    button {
+      margin: 12px 0 0 0;
+      padding: 5px 18px;
+      background: #5577ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #3355cc;
+    }
+    #nextsection {
+      display: none;
+      padding: 18px 28px;
+      margin: 18px 0;
+      background: #191923;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000b inset;
+      color: #e0e0e0;
+    }
+    .math {
+      font-family: 'Consolas', monospace;
+      color: #aaf;
+    }
+    .group-title {
+      font-size: 1.2em;
+      color: #ace;
+      margin-bottom: 8px;
+    }
+  </style>
+  <!-- Orbitron Google Fonts for Sci-fi feel -->
+  <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      Asteroid Outpost Escape Room
+    </div>
+    <div class="story">
+      <strong>Mission Brief:</strong><br>
+      You are the replacement crew, rocketed out to Mining/Science Outpost IX in the mid-belt. En route, the outpost mysteriously lost contact with all outside comms.<br><br>
+      On arrival, the airlock is sealed by a <em>multi-dimensional lock</em>. Only fragmented clues remain, buried in the outpost’s math-based control systems.<br><br>
+      Each team must solve their segment’s puzzle to unlock their part of the airlock. Once solved, unite to help other teams crack their codes and save the outpost.<br>
+      <strong>Hint:</strong> These puzzles will require teamwork and sharp math skills!
+    </div>
+
+    <!-- ======================== CHALLENGE 1 =============================== -->
+    <div class="challenge">
+      <div class="overlay">
+        <div class="group-title">Group 1: Slope Sequence Override</div>
+        <p>The engineers left equations as code. <strong>Solve for the slope (<span class="math">m</span>) of each equation</strong>, and enter them in order, separated by commas.</p>
+        <ul>
+          <li><span class="math">y = 2x + 4</span></li>
+          <li><span class="math">y = -3x + 7</span></li>
+          <li><span class="math">y = x - 5</span></li>
+        </ul>
+        <input type="text" id="group1input" placeholder="e.g. 2,-3,1">
+        <button onclick="checkGroup1()">Unlock</button>
+        <div id="group1feedback"></div>
+      </div>
+    </div>
+    <!-- ======================== CHALLENGE 2 =============================== -->
+    <div class="challenge">
+      <div class="overlay">
+        <div class="group-title">Group 2: Y-Intercept Subsystem</div>
+        <p>Decrypted files show equations—the y-intercepts (<span class="math">b</span>) are the code. Enter the y-intercepts in order, comma-separated.</p>
+        <ul>
+          <li><span class="math">y = 4x + 2</span></li>
+          <li><span class="math">y = -x + 6</span></li>
+          <li><span class="math">y = 3x - 1</span></li>
+        </ul>
+        <input type="text" id="group2input" placeholder="e.g. 2,6,-1">
+        <button onclick="checkGroup2()">Unlock</button>
+        <div id="group2feedback"></div>
+      </div>
+    </div>
+    <!-- ======================== CHALLENGE 3 =============================== -->
+    <div class="challenge">
+      <div class="overlay">
+        <div class="group-title">Group 3: Slope-Intercept Cipher</div>
+        <p>Maintenance logs need updating. <strong>Write each line in <span class="math">y = mx + b</span> form</strong> (comma-separated, no spaces, use 'y=').</p>
+        <ul>
+          <li>Slope: 5, y-intercept: -2</li>
+          <li>Slope: -1, y-intercept: 4</li>
+        </ul>
+        <input type="text" id="group3input" placeholder="e.g. y=5x-2,y=-1x+4">
+        <button onclick="checkGroup3()">Unlock</button>
+        <div id="group3feedback"></div>
+      </div>
+    </div>
+    <!-- ======================== CHALLENGE 4 =============================== -->
+    <div class="challenge">
+      <div class="overlay">
+        <div class="group-title">Group 4: Linear Discovery</div>
+        <p><strong>Solve for <span class="math">x</span></strong> in each equation. Enter your answers, comma-separated.</p>
+        <ul>
+          <li><span class="math">2x = 8</span></li>
+          <li><span class="math">3x + 1 = 7</span></li>
+          <li><span class="math">x - 5 = 3</span></li>
+        </ul>
+        <input type="text" id="group4input" placeholder="e.g. 4,2,8">
+        <button onclick="checkGroup4()">Unlock</button>
+        <div id="group4feedback"></div>
+      </div>
+    </div>
+    <!-- ======================== CHALLENGE 5 =============================== -->
+    <div class="challenge">
+      <div class="overlay">
+        <div class="group-title">Group 5: System Restore Core</div>
+        <p>Critical control system glitches! <br>
+        <strong>Solve the following system for <span class="math">x</span> and <span class="math">y</span>.</strong> Enter as <span class="math">x,y</span>.</p>
+        <ul>
+          <li>
+            <span class="math">
+              2x + y = 9
+              <br>
+              x - y = 1
+            </span>
+          </li>
+        </ul>
+        <input type="text" id="group5input" placeholder="e.g. 3,2">
+        <button onclick="checkGroup5()">Unlock</button>
+        <div id="group5feedback"></div>
+      </div>
+    </div>
+
+    <!-- Section for expansion -->
+    <div id="nextsection">
+      <h2>All Segments Unlocked!</h2>
+      <p>The airlock opens with a hiss of escaping pressurized gas. You have entered the outpost.<br>
+         But what awaits in the next chamber? <strong>Future challenges are being designed!</strong>
+      </p>
+    </div>
+  </div>
+  <script>
+    function checkGroup1() {
+      const input = document.getElementById('group1input').value.replace(/\s/g, "");
+      if (input === "2,-3,1") {
+        document.getElementById('group1feedback').textContent = "Correct! Segment unlocked. Assist other teams!";
+        advanceCheck('group1');
+      } else {
+        document.getElementById('group1feedback').textContent = "Try again.";
+      }
+    }
+    function checkGroup2() {
+      const input = document.getElementById('group2input').value.replace(/\s/g, "");
+      if (input === "2,6,-1") {
+        document.getElementById('group2feedback').textContent = "Correct! Segment unlocked. Assist other teams!";
+        advanceCheck('group2');
+      } else {
+        document.getElementById('group2feedback').textContent = "Try again.";
+      }
+    }
+    function checkGroup3() {
+      const input = document.getElementById('group3input').value.replace(/\s/g, "");
+      if (input.toLowerCase() === "y=5x-2,y=-1x+4") {
+        document.getElementById('group3feedback').textContent = "Correct! Segment unlocked. Assist other teams!";
+        advanceCheck('group3');
+      } else {
+        document.getElementById('group3feedback').textContent = "Try again. Watch formatting!";
+      }
+    }
+    function checkGroup4() {
+      const input = document.getElementById('group4input').value.replace(/\s/g, "");
+      if (input === "4,2,8") {
+        document.getElementById('group4feedback').textContent = "Correct! Segment unlocked. Assist other teams!";
+        advanceCheck('group4');
+      } else {
+        document.getElementById('group4feedback').textContent = "Try again.";
+      }
+    }
+    function checkGroup5() {
+      const input = document.getElementById('group5input').value.replace(/\s/g, "");
+      if (input === "3,6") {
+        document.getElementById('group5feedback').textContent = "Correct! System restored!";
+        advanceCheck('group5');
+      } else {
+        document.getElementById('group5feedback').textContent = "Try again.";
+      }
+    }
+    // Track segments unlocked; reveal next section when all solved
+    let segmentsComplete = {};
+    function advanceCheck(group) {
+      segmentsComplete[group] = true;
+      if (segmentsComplete.group1 && segmentsComplete.group2 && segmentsComplete.group3 && segmentsComplete.group4 && segmentsComplete.group5){
+        document.getElementById('nextsection').style.display = '';
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    }
+  </script>
+</body>
+</html>
