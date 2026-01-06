@@ -44,16 +44,12 @@
       color: #f7fff8;
       border: 3px solid #7afdff;
       box-shadow: 0 0 50px #13ffa0;
-      /* NO animation by default; JS will toggle .pulse for effect */
-    }
-    .segment.done.pulse {
       animation: pulse 1s 2;
     }
     @keyframes pulse {
-      0%   { box-shadow: 0 0 50px #13ffa080; }
-      25%  { box-shadow: 0 0 120px #13ffa040; background: #48ffb5; color: #ffffff;}
-      75%  { box-shadow: 0 0 100px #13ffa040; }
-      100% { box-shadow: 0 0 50px #13ffa080; background: #33da92; color: #f7fff8; }
+      0% { box-shadow: 0 0 50px #13ffa080; }
+      50% { box-shadow: 0 0 100px #13ffa040; }
+      100% { box-shadow: 0 0 50px #13ffa080; }
     }
     .reset-btn {
       display: inline-block;
@@ -105,27 +101,17 @@
             el.classList.add('done');
             el.innerText = "Group " + i + "\n✓";
           } else {
-            el.classList.remove('done', 'pulse');
+            el.classList.remove('done');
             el.innerText = "Group " + i;
           }
         }
-
-        
+      } catch (err) {
         console.error("JS Error:", err);
       }
     }
+
     setInterval(showStatus, 1500);
     showStatus();
-
-    // Repeat pulses every 5 seconds
-    setInterval(() => {
-      document.querySelectorAll('.segment.done').forEach(el => {
-        el.classList.remove('pulse');
-        void el.offsetWidth; // force reflow
-        el.classList.add('pulse');
-        setTimeout(() => el.classList.remove('pulse'), 2000);
-      });
-    }, 10000);
 
     async function resetStatus() {
       try {
