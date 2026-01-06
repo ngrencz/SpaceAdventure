@@ -116,76 +116,78 @@
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function checkTaskCompletion() {
-      const hourValue = localStorage.getItem("classHour") || "";
-      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
+  const hourValue = localStorage.getItem("classHour") || "";
+  const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
 
-      // Clear injected task links every check
-      document.getElementById("task2div").innerHTML = "";
-      document.getElementById("task3div").innerHTML = "";
+  // Check Task 1 completion for all groups
+  const { data: data1 } = await client
+    .from('airlock_status')
+    .select('group,done')
+    .eq('hour', hourValue)
+    .eq('task', 'task1');
+  const allDone1 = expectedGroups.every(grp =>
+    data1?.find(d => d.group === grp && d.done)
+  );
 
-      // Check Task 1 completion for all groups
-      const { data: data1 } = await client
-        .from('airlock_status')
-        .select('group,done')
-        .eq('hour', hourValue)
-        .eq('task', 'task1');
-      const allDone1 = expectedGroups.every(grp =>
-        data1?.find(d => d.group === grp && d.done)
-      );
+  // Mark Task 1 as complete
+  const task1 = document.getElementById("task1link");
+  const prevCheck = task1.querySelector(".checkmark");
+  if (prevCheck) task1.removeChild(prevCheck);
+  if (allDone1) {
+    task1.classList.add("completed");
+    const check = document.createElement("span");
+    check.className = "checkmark";
+    check.textContent = "✓";
+    task1.appendChild(check);
 
-      // Mark Task 1 as complete
-      const task1 = document.getElementById("task1link");
-      const prevCheck = task1.querySelector(".checkmark");
-      if (prevCheck) task1.removeChild(prevCheck);
-      if (allDone1) {
-        task1.classList.add("completed");
-        const check = document.createElement("span");
-        check.className = "checkmark";
-        check.textContent = "✓";
-        task1.appendChild(check);
-
-        // Inject Task 2 link when Task 1 is done
-        const link2 = document.createElement("a");
-        link2.href = "task.html";
-        link2.className = "biglink";
-        link2.id = "task2link";
-        link2.textContent = "Task 2 – Find Damaged Compartment";
-        link2.onclick = function(e) {
-          localStorage.setItem('currentTask', 'task2');
-          window.location.href = this.href;
-          return false;
-        };
-        document.getElementById("task2div").appendChild(link2);
-
-        // Check Task 2 for all groups
-        const { data: data2 } = await client
-          .from('airlock_status')
-          .select('group,done')
-          .eq('hour', hourValue)
-          .eq('task', 'task2');
-        const allDone2 = expectedGroups.every(grp =>
-          data2?.find(d => d.group === grp && d.done)
-        );
-        if (allDone2) {
-          const link3 = document.createElement("a");
-          link3.href = "task.html";
-          link3.className = "biglink";
-          link3.id = "task3link";
-          link3.textContent = "Task 3 – Repair Module Sequencing";
-          link3.onclick = function(e) {
-            localStorage.setItem('currentTask', 'task3');
-            window.location.href = this.href;
-            return false;
-          };
-          document.getElementById("task3div").appendChild(link3);
-        }
-      } else {
-        task1.classList.remove("completed");
-      }
+    // Inject Task 2 link ONCE
+    if (!document.getElementById("task2link")) {
+      const link2 = document.createElement("a");
+      link2.href = "task.html";
+      link2.className = "biglink";
+      link2.id = "task2link";
+      link2.textContent = "Task 2 – Find Damaged Compartment";
+      link2.onclick = function(e) {
+        localStorage.setItem('currentTask', 'task2');
+        window.location.href = this.href;
+        return false;
+      };
+      document.getElementById("task2div").appendChild(link2);
     }
-    window.addEventListener('DOMContentLoaded', checkTaskCompletion);
-    setInterval(checkTaskCompletion, 2000);
 
+    // Check Task 2 for all groups
+    const { data: data2 } = await client
+      .from('airlock_status')
+      .select('group,done')
+      .eq('hour', hourValue)
+      .eq('task', 'task2');
+    const allDone2 = expectedGroups.every(grp =>
+      data2?.find(d => d.group === grp && d.done)
+    );
+
+    // Inject Task 3 link ONCE
+    if (allDone2 && !document.getElementById("task3link")) {
+      const link3 = document.createElement("a");
+      link3.href = "task.html";
+      link3.className = "biglink";
+      link3.id = "task3link";
+      link3.textContent = "Task 3 – Repair Module Sequencing";
+      link3.onclick = function(e) {
+        localStorage.setItem('currentTask', 'task3');
+        window.location.href = this.href;
+        return false;
+      };
+      document.getElementById("task3div").appendChild(link3);
+    }
+  } else {
+    task1.classList.remove("completed");
+    // Remove Task 2 and Task 3 links if Task 1 falls incomplete
+    if (document.getElementById("task2link")) document.getElementById("task2div").innerHTML = "";
+    if (document.getElementById("task3link")) document.getElementById("task3div").innerHTML = "";
+  }
+}
+window.addEventListener('DOMContentLoaded', checkTaskCompletion);
+setInterval(checkTaskCompletion, 2000);
     function setTaskAndGo(taskId, href) {
       localStorage.setItem('currentTask', taskId);
       window.location.href = href;
