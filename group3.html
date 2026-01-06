@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Group 3 – Slope-Intercept Cipher</title>
+  <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
+  <style>/* Paste styles as above */</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="heading">Group 3: Slope-Intercept Cipher</div>
+    <div class="overlay">
+      <div>
+        <strong>Clue:</strong> Write each equation in <span class="math">y=mx+b</span> form, comma-separated, no spaces.
+      </div>
+      <ul>
+        <li>Slope: 5, y-intercept: -2</li>
+        <li>Slope: -1, y-intercept: 4</li>
+      </ul>
+      <input type="text" id="ans" placeholder="e.g. y=5x-2,y=-1x+4">
+      <button onclick="checkAnswer()">Unlock</button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <a href="airlock.html" class="backlink">← Back to Control Panel</a>
+  </div>
+  <script>
+    const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    window.onload = async function() {
+      let { data } = await supabase.from('airlock_status').select('done').eq('group', 'group3').single();
+      if (data && data.done) {
+        document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+      }
+    }
+    async function checkAnswer() {
+      var entry = document.getElementById("ans").value.replace(/\s/g,"").toLowerCase();
+      if (entry === "y=5x-2,y=-1x+4") {
+        document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        await supabase.from('airlock_status').upsert([{ group: 'group3', done: true }]);
+      } else {
+        document.getElementById("feedback").textContent = "Try again.";
+      }
+    }
+  </script>
+</body>
+</html>
+
+
