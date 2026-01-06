@@ -9,14 +9,14 @@
     .container { max-width:650px; margin:40px auto; background:#233140ee; border-radius:10px; padding:28px 28px 38px 28px; box-shadow:0 0 12px #252545; }
     .heading { font-size:1.7em; color:#b2e2ff; margin-bottom:20px; text-align:center; }
     .overlay { background:rgba(16, 16, 24, 0.89); padding:19px 24px; border-radius:8px; margin:0 auto; max-width:370px; box-shadow:0 2px 8px #18181844;}
-    input, button { font-size:1em; margin-top:8px; }
-    input { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:88%; }
-    button { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; }
-    button:hover { background:#3355cc; }
+    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:90px; font-size:1em; text-align: center; margin-right: 6px;}
+    #unlockBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
+    #unlockBtn:hover { background:#3355cc; }
     .math { font-family:'Consolas', monospace; color:#aaf; }
     .feedback { color:#6effc1; margin-top:14px; font-weight:bold; }
     .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
     .backlink:hover {background:#2c334b;}
+    ul { padding-left: 18px;}
   </style>
 </head>
 <body>
@@ -24,27 +24,23 @@
     <div class="heading">Group 3: Slope-Intercept Cipher</div>
     <div class="overlay">
       <div>
-        <strong>Clue:</strong> Write each line in <span class="math">y = mx + b</span> form. Enter both, comma-separated, no spaces. Use lowercase.
+        <strong>Clue:</strong> Write each equation below in <span class="math">y = mx + b</span> form (lower case, no spaces).
       </div>
       <ul>
-        <li>Slope: 5, y-intercept: -2</li>
-        <li>Slope: -1, y-intercept: 4</li>
+        <li>Slope: 5, y-intercept: -2 → <input type="text" id="ans1" maxlength="8" placeholder="y=5x-2"></li>
+        <li>Slope: -1, y-intercept: 4 → <input type="text" id="ans2" maxlength="10" placeholder="y=-1x+4"></li>
       </ul>
-      <input type="text" id="ans" placeholder="e.g. y=5x-2,y=-1x+4">
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
     <a href="airlock.html" class="backlink">← Back to Control Panel</a>
   </div>
-
-  <!-- Supabase and script go at the end, after HTML is loaded -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Check status (only in async function)
     async function checkCompleted() {
       try {
         let { data, error } = await client
@@ -52,13 +48,12 @@
           .select('done')
           .eq('group', 'group3')
           .maybeSingle();
-        console.log("Status data:", data);
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
         } else {
           document.getElementById("feedback").textContent = "";
         }
-        if (error && error.code !== "PGRST116") { // ignore no row error
+        if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
           console.error("Supabase error (on load):", error);
         }
@@ -67,13 +62,12 @@
         console.error("JS Error (on load):", err);
       }
     }
-
-    // Run it on load
     window.addEventListener('DOMContentLoaded', checkCompleted);
 
     document.getElementById("unlockBtn").onclick = async function() {
-      var entry = document.getElementById("ans").value.replace(/\s/g,"").toLowerCase();
-      if (entry === "y=5x-2,y=-1x+4") {
+      var a1 = document.getElementById("ans1").value.trim().toLowerCase();
+      var a2 = document.getElementById("ans2").value.trim().toLowerCase();
+      if (a1 === "y=5x-2" && a2 === "y=-1x+4") {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
         try {
           const { error, data } = await client
