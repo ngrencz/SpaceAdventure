@@ -109,7 +109,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Config
-    // Updated repair assignments for Task 3 per your last message:
     const REPAIR_ZONES = [
       "Compartments 17-40 on Decks 3-6",     // Group 1
       "Compartments 17-40 on Decks 7-10",    // Group 2
@@ -140,16 +139,16 @@
     let lastOverlayTaskShown = null;
     let previousColor = "";
     let hourValue = localStorage.getItem("classHour") || "";
+    let currentTask = localStorage.getItem("currentTask") || "task1"; // Use localStorage!
 
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let currentTask = "task1";
     let cluesShown = [];
     let hullShown = [];
 
-    // Robust overlay handler
+    // Robust overlay handler (unchanged)
     function updateOverlay(show, html, persistForMs) {
       const overlay = document.getElementById("overlayAccess");
       const accessText = document.getElementById("accessText");
@@ -169,38 +168,10 @@
       }
     }
 
-    // FIXED: This now reliably finds the most recent completed task.
-    async function findMostRecentTask() {
-      const { data, error } = await client
-        .from('airlock_status')
-        .select('task,group,done')
-        .eq('hour', hourValue);
-
-      let counts = {};
-      (data || []).forEach(row => {
-        if (row.done) {
-          counts[row.task] = (counts[row.task] || 0) + 1;
-        }
-      });
-
-      let mostRecent = "task1";
-      let maxN = 1;
-      Object.keys(counts).forEach(taskKey => {
-        if (counts[taskKey] === 5) {
-          let num = Number(taskKey.replace("task", ""));
-          if (num > maxN) {
-            maxN = num;
-            mostRecent = taskKey;
-          }
-        }
-      });
-      return mostRecent;
-    }
-
     async function showStatus() {
-      currentTask = await findMostRecentTask();
-
-      // Query only the most recent completed task data for current hour.
+      // re-read the currentTask in case it changes
+      currentTask = localStorage.getItem("currentTask") || "task1";
+      // Query only for the locally-selected task
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done,task')
