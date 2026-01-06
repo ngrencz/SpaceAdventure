@@ -43,12 +43,12 @@
   <script>
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
     // Check if already completed on load
     window.addEventListener('DOMContentLoaded', async function() {
       try {
-        let { data, error } = await supabase
+        let { data, error } = await client
           .from('airlock_status')
           .select('done')
           .eq('group', 'group1')
@@ -71,7 +71,7 @@
       if (entry === "2,-3,1") {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
         try {
-          const { error, data } = await supabase
+          const { error, data } = await client
             .from('airlock_status')
             .upsert([{ group: 'group1', done: true }]);
           if (error) {
