@@ -16,6 +16,7 @@
     .hourbar.orange { background: #cc7000; color: #fff2e6; box-shadow: 0 0 36px #ffb54a, 0 0 12px #7a3c00;}
     .hourbar.yellow { background: #ffe035; color: #2a2a2a; box-shadow: 0 0 32px #fff57a, 0 0 10px #d2ba0a;}
     .hourbar.green { background: #23d75a; color: #fff; box-shadow: 0 0 44px #33ff99, 0 0 14px #16a064;}
+    .hourbar.blue { background: #225daf; color: #fffbea; box-shadow: 0 0 44px #448cff, 0 0 14px #163393;}
     .hourbar.pulse { animation: pulsebar 1.4s 2;}
     @keyframes pulsebar { 0%{} 20%{box-shadow:0 0 38px #fd4a4a,0 0 18px #660f19;} 40%{box-shadow:0 0 52px #ffb54a,0 0 22px #7a3c00;} 60%{box-shadow:0 0 56px #fff57a,0 0 16px #e2df45;} 80%{box-shadow:0 0 48px #33ff99,0 0 20px #16a064;} 100%{} }
     .status-panel { display: flex; justify-content: center; gap: 34px; margin-top: 18px; margin-bottom:18px;}
@@ -26,6 +27,7 @@
       position: relative;
     }
     .segment.done { background: #33da92; color: #f7fff8; border: 3px solid #7afdff; box-shadow: 0 0 50px #13ffa0, 0 0 14px #23d75a;}
+    .segment.repair { background: #225daf; color: #eaf5ff; border: 3px solid #7caefd; box-shadow: 0 0 48px #448cff, 0 0 13px #225daf;}
     .segment.done.pulse { animation: pulse 1s 2;}
     @keyframes pulse {
       0%{box-shadow:0 0 50px #13ffa080;}
@@ -33,7 +35,7 @@
       75%{box-shadow:0 0 100px #13ffa040,0 0 18px #23d75a;}
       100%{box-shadow:0 0 50px #13ffa080; background:#33da92;}
     }
-    .clue-panel {
+    .clue-panel, .hull-panel {
       display: none;
       margin: 30px auto 0 auto;
       max-width: 560px;
@@ -42,9 +44,9 @@
       padding: 24px 14px 20px 14px;
       box-shadow: 0 0 32px #17adfc22, 0 2px 28px #20bb7f22;
     }
-    .clue-title { color:#53ffaa; font-size:1.14em; margin-bottom:12px; text-shadow:0 2px 14px #1b9b7b44; }
-    .clue-text-list { font-size:1.07em; color:#aefcca; letter-spacing: 1.5px;}
-    .loc-final { font-size: 1.23em; color: #7cdcf8; margin-top: 30px; font-weight: bold;}
+    .clue-title, .hull-title { color:#53ffaa; font-size:1.14em; margin-bottom:12px; text-shadow:0 2px 14px #1b9b7b44; }
+    .clue-text-list, .hull-list { font-size:1.07em; color:#aefcca; letter-spacing: 1.5px;}
+    .loc-final, .hull-final { font-size: 1.23em; color: #7cdcf8; margin-top: 30px; font-weight: bold;}
     .overlay-wrap {
       display: none;
       position: fixed;
@@ -95,7 +97,11 @@
     <div class="clue-title">Clues Revealed:</div>
     <div id="clueList" class="clue-text-list"></div>
   </div>
-  <div id="locFinal" class="loc-final"></div>
+  <div id="hullPanel" class="hull-panel">
+    <div class="hull-title">Hull Repair Progress:</div>
+    <div id="hullList" class="hull-list"></div>
+    <div id="hullFinal" class="hull-final"></div>
+  </div>
   <button class="reset-btn" onclick="resetStatus()">Reset Status</button>
   <div class="overlay-wrap" id="overlayAccess">
     <div class="overlay-content" id="accessText"></div>
@@ -107,15 +113,21 @@
       "Aft Section",      // Group 1
       "Starboard Side",   // Group 2
       "Lower Decks",      // Group 3
-      "Decks 3-17",           // Group 4
-      "Compartments #17-48"   // Group 5
+      "Decks 3–17",       // Group 4
+      "Compartments #17–48" // Group 5
     ];
     const GROUP_LABELS = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
-    // List of tasks that reveal clues
-    const CLUE_TASKS = ["task2"]; // add future clue-bearing tasks here!
+    const TASKS_META = {
+      task1: { name: "Airlock Security", color: "red", panel: "cluePanel" },
+      task2: { name: "Damage Location", color: "green", panel: "cluePanel" },
+      task3: { name: "Hull Repair", color: "blue", panel: "hullPanel" }
+    };
+
+    const CLUE_TASKS = ["task2"];
+    const HULL_TASKS = ["task3"];
     let overlayPersist = false;
     let lastOverlayTaskHour = null;
-    let lastOverlayTaskShown = null; // The task for which the overlay was last shown
+    let lastOverlayTaskShown = null;
     let previousColor = "";
     let hourValue = localStorage.getItem("classHour") || "";
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
@@ -124,6 +136,7 @@
 
     let currentTask = "task1";
     let cluesShown = [];
+    let hullShown = [];
 
     // Robust overlay handler
     function updateOverlay(show, html, persistForMs) {
@@ -184,45 +197,80 @@
         .eq('task', currentTask);
 
       cluesShown = [];
+      hullShown = [];
       let doneCount = 0;
       for (let i = 1; i <= 5; i++) {
         const el = document.getElementById("stat" + i);
         const groupName = "group" + i;
-        el.classList.remove('done', 'pulse');
+        el.classList.remove('done', 'pulse', 'repair');
         let groupData = data?.find(d => d.group === groupName);
         if(groupData && groupData.done){
-          el.classList.add('done');
-          el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
-          if(CLUE_TASKS.includes(currentTask)){ cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`); }
           doneCount++;
+          if (HULL_TASKS.includes(currentTask)) {
+            el.classList.add('done', 'repair');
+            el.innerHTML = `${GROUP_LABELS[i-1]}<br>✓<br><span style="font-size:0.96em;color:#b5f7ff;">${CLUES[i-1]}</span>`;
+            hullShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]} <span style="color:#83daff;">- Repaired</span>`);
+          }
+          else {
+            el.classList.add('done');
+            el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
+            if(CLUE_TASKS.includes(currentTask)){
+              cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`);
+            }
+          }
         } else {
           el.innerHTML = GROUP_LABELS[i-1];
         }
       }
 
-      // CLUE PANEL logic
+      // PANEL swap logic
       const cluePanel = document.getElementById("cluePanel");
       const clueList = document.getElementById("clueList");
-      if (cluesShown.length > 0) {
+      const hullPanel = document.getElementById("hullPanel");
+      const hullList = document.getElementById("hullList");
+      const hullFinal = document.getElementById("hullFinal");
+
+      cluePanel.style.display = "none";
+      hullPanel.style.display = "none";
+      clueList.innerHTML = "";
+      hullList.innerHTML = "";
+      hullFinal.innerHTML = "";
+
+      if (CLUE_TASKS.includes(currentTask) && cluesShown.length > 0) {
         cluePanel.style.display = "block";
         clueList.innerHTML = cluesShown.join("<br>");
         if (cluesShown.length === 5) {
-          clueList.innerHTML += `<br><br><span style="font-size:1.17em; color:#43e6ef; font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
+          clueList.innerHTML += `<br><br><span style="font-size:1.16em; color:#43e6ef; font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
         }
-      } else {
-        cluePanel.style.display = "none";
-        clueList.innerHTML = "";
+      }
+      else if (HULL_TASKS.includes(currentTask)) {
+        hullPanel.style.display = "block";
+        hullList.innerHTML = hullShown.join("<br>");
+        if (hullShown.length === 5) {
+          hullFinal.innerHTML = `<span style="font-size:1.19em; color:#86ffe2; font-weight:bold;">
+            Hull Integrity: <span style="color:#44acff;">REPAIRED</span><br>
+            <span style="font-size:0.98em;color:#cdfcff;font-weight:normal;">Survival odds improved.<br>
+            Stand by for oxygen system reactivation module...</span>
+          </span>`;
+        } else {
+          hullFinal.innerHTML = `<span style="font-size:1.09em; color:#63e8ef; font-weight:bold;">Hull Repairs Pending...</span>`;
+        }
       }
 
-      // Bar color/status
+      // Bar color/status logic
       const bar = document.getElementById("hourbar");
       let colorClass = "red";
-      if (doneCount >= 5) colorClass = "green";
+      if (HULL_TASKS.includes(currentTask)) colorClass = "blue";
+      else if (doneCount >= 5 && CLUE_TASKS.includes(currentTask)) colorClass = "green";
       else if (doneCount >= 3) colorClass = "yellow";
       else if (doneCount >= 1) colorClass = "orange";
-      bar.classList.remove("red", "orange", "yellow", "green", "pulse");
-      bar.classList.add(colorClass);
-      bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+
+      bar.className = `hourbar ${colorClass}`;
+      if (HULL_TASKS.includes(currentTask)) {
+        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(Hull Repair: ${doneCount}/5 complete)</span>`;
+      } else {
+        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+      }
       if (previousColor !== colorClass) {
         bar.classList.add("pulse");
         setTimeout(() => bar.classList.remove("pulse"), 2800);
@@ -230,7 +278,6 @@
       }
 
       // OVERLAY logic: only show ONCE per completed task per hour
-      const overlay = document.getElementById("overlayAccess");
       if (doneCount === 5 && !overlayPersist && (lastOverlayTaskHour !== hourValue || lastOverlayTaskShown !== currentTask)) {
         overlayPersist = true;
         lastOverlayTaskHour = hourValue;
@@ -255,9 +302,17 @@
           setTimeout(() => {
             overlayPersist = false;
           }, 10000);
+        } else if(HULL_TASKS.includes(currentTask)){
+          updateOverlay(
+            true,
+            "<span style='color:#acecff;'>Hull Repair Sequence Complete!</span><br><br>All critical sectors restored.<br>Survival odds improved.<br><span style='font-size:0.7em;color:#c7ffdc;'>Next Module Activation: Oxygen System…</span>",
+            11000
+          );
+          setTimeout(() => {
+            overlayPersist = false;
+          }, 11000);
         }
       }
-      // Only forcibly hide overlay if not overlayPersist and not completed
       if ((doneCount < 5) && !overlayPersist) {
         updateOverlay(false);
       }
@@ -288,6 +343,9 @@
         document.getElementById("mainTitle").innerHTML = "Outpost IX Airlock<br>Status Panel";
         document.getElementById("cluePanel").style.display = "none";
         document.getElementById("clueList").innerHTML = "";
+        document.getElementById("hullPanel").style.display = "none";
+        document.getElementById("hullList").innerHTML = "";
+        document.getElementById("hullFinal").innerHTML = "";
       } catch (err) {
         console.error("Reset JS Error:", err);
       }
