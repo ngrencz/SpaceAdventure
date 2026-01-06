@@ -53,6 +53,7 @@
           .select('done')
           .eq('group', 'group4')
           .eq('hour', hourValue)
+          .eq('task', taskId)
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
