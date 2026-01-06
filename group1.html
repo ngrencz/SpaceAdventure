@@ -86,7 +86,7 @@
     try {
       const { error, data } = await client
         .from('airlock_status')
-        .upsert([{ group: 'group1', done: true, hour: hourValue }]);
+        .upsert([{ group: 'group1', task: taskId, done: true, hour: hourValue }]);
       if (error) {
         document.getElementById("feedback").textContent += "\nError: " + error.message;
         console.error("Supabase error:", error);
