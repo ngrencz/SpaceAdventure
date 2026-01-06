@@ -103,11 +103,25 @@
       75%  { box-shadow: 0 0 100px #13ffa040, 0 0 18px #23d75a; }
       100% { box-shadow: 0 0 50px #13ffa080; background: #33da92;}
     }
-    .clue-text {
-      font-size: 0.96em;
-      color: #aefcca;
-      margin-top: 14px;
-      font-weight: bold;
+    .clue-panel {
+      display: none;
+      margin: 30px auto 0 auto;
+      max-width: 560px;
+      background: #202c44;
+      border-radius: 15px;
+      padding: 24px 14px 20px 14px;
+      box-shadow: 0 0 32px #17adfc22, 0 2px 28px #20bb7f22;
+    }
+    .clue-title {
+      color:#53ffaa; 
+      font-size:1.14em; 
+      margin-bottom:12px; 
+      text-shadow:0 2px 14px #1b9b7b44;
+    }
+    .clue-text-list {
+      font-size:1.07em; 
+      color:#aefcca; 
+      letter-spacing: 1.5px;
     }
     .loc-final {
       font-size: 1.23em;
@@ -164,6 +178,13 @@
     <div class="segment" id="stat4">Group 4</div>
     <div class="segment" id="stat5">Group 5</div>
   </div>
+
+  <!-- CLUE Panel (hidden until clues start) -->
+  <div id="cluePanel" class="clue-panel">
+    <div class="clue-title">Clues Revealed:</div>
+    <div id="clueList" class="clue-text-list"></div>
+  </div>
+
   <div id="locFinal" class="loc-final"></div>
   <button class="reset-btn" onclick="resetStatus()">Reset Status</button>
 
@@ -197,10 +218,8 @@
         .eq('hour', hourValue)
         .eq('task', currentTask);
 
-      // Map group completion
-      let doneCount = 0;
       cluesShown = [];
-      // For the group segments
+      let doneCount = 0;
       for (let i = 1; i <= 5; i++) {
         const el = document.getElementById("stat" + i);
         const groupName = "group" + i;
@@ -208,16 +227,30 @@
         let groupData = data?.find(d => d.group === groupName);
         if(groupData && groupData.done){
           el.classList.add('done');
-          el.innerHTML = GROUP_LABELS[i-1] + "<br>✓" + `<div class="clue-text">${CLUES[i-1]}</div>`;
+          el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
+          // Reveal clue for this group only if currentTask is a clue-giving task
+          if(["task2","task3"].includes(currentTask)){
+            cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`);
+          }
           doneCount++;
-          cluesShown.push(CLUES[i-1]);
         } else {
           el.innerHTML = GROUP_LABELS[i-1];
         }
       }
-      // Compose final location string if all clues present
-      document.getElementById('locFinal').innerText =
-        cluesShown.length === 5 ? `LOCATION: ${cluesShown.join(" – ")}` : "";
+      // -- CLUE PANEL logic --
+      const cluePanel = document.getElementById("cluePanel");
+      const clueList = document.getElementById("clueList");
+      if (cluesShown.length > 0) {
+        cluePanel.style.display = "block";
+        clueList.innerHTML = cluesShown.join("<br>");
+        // Show assemble location when all 5 clues are revealed
+        if (cluesShown.length === 5) {
+          clueList.innerHTML += `<br><br><span style="font-size:1.17em; color:#43e6ef; font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
+        }
+      } else {
+        cluePanel.style.display = "none";
+        clueList.innerHTML = "";
+      }
 
       // Bar color and info
       const bar = document.getElementById("hourbar");
@@ -234,21 +267,17 @@
         previousColor = colorClass;
       }
 
-      // All done logic
+      // All done logic and overlays
       const overlay = document.getElementById("overlayAccess");
       const accessText = document.getElementById("accessText");
       if (doneCount === 5) {
         if(currentTask === "task1"){
           overlay.style.display = "flex";
           accessText.innerHTML = "Access Granted!<br>All security segments unlocked.<br><br>";
-          for(let i=0; i < CLUES.length; i++){
-            accessText.innerHTML += `<span style="font-size:0.92em;color:#9fedcc;">${GROUP_LABELS[i]}: ${CLUES[i]}</span><br>`;
-          }
-          accessText.innerHTML += `<br><span style="font-size:1.07em;color:#7cdcf8;font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
           setTimeout(() => {
             overlay.style.display = "none";
             switchToTask2();
-          }, 10000);
+          }, 10000); // After overlay, go to next task
         } else if(currentTask === "task2"){
           overlay.style.display = "flex";
           accessText.innerHTML = "<span style='font-size:1.08em;color:#f7fc7e;'>Structural Lockdown Cleared!<br>All damage containment tasks complete.<br><br>Outpost secured.</span>";
@@ -264,7 +293,9 @@
       cluesShown = [];
       document.getElementById("mainTitle").innerHTML = "Outpost IX Damage Panel<br>Task 2";
       document.getElementById("hourbar").classList.remove("pulse", "green", "orange", "yellow", "red");
-      document.getElementById("locFinal").innerText = "";
+      // Reset clue panel
+      document.getElementById("cluePanel").style.display = "none";
+      document.getElementById("clueList").innerHTML = "";
     }
 
     setInterval(showStatus, 1500);
@@ -289,7 +320,8 @@
         setTimeout(showStatus, 1000);
         currentTask = "task1";
         document.getElementById("mainTitle").innerHTML = "Outpost IX Airlock<br>Status Panel";
-        document.getElementById("locFinal").innerText = "";
+        document.getElementById("cluePanel").style.display = "none";
+        document.getElementById("clueList").innerHTML = "";
       } catch (err) {
         console.error("Reset JS Error:", err);
       }
