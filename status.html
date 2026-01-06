@@ -109,6 +109,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Config
+    // Updated repair assignments for Task 3 per your last message:
+    const REPAIR_ZONES = [
+      "Compartments 17-40 on Decks 3-6",     // Group 1
+      "Compartments 17-40 on Decks 7-10",    // Group 2
+      "Compartments 17-40 on Decks 11-14",   // Group 3
+      "Compartments 17-40 on Decks 15–17",   // Group 4
+      "Compartments 41–48 on Decks 3-17"     // Group 5
+    ];
     const CLUES = [
       "Aft Section",      // Group 1
       "Starboard Side",   // Group 2
@@ -116,13 +124,15 @@
       "Decks 3–17",       // Group 4
       "Compartments #17–48" // Group 5
     ];
-    const GROUP_LABELS = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
-    const TASKS_META = {
-      task1: { name: "Airlock Security", color: "red", panel: "cluePanel" },
-      task2: { name: "Damage Location", color: "green", panel: "cluePanel" },
-      task3: { name: "Hull Repair", color: "blue", panel: "hullPanel" }
-    };
+    const GROUP_LABELS = [
+      "Group 1",
+      "Group 2",
+      "Group 3",
+      "Group 4",
+      "Group 5"
+    ];
 
+    // Type switching
     const CLUE_TASKS = ["task2"];
     const HULL_TASKS = ["task3"];
     let overlayPersist = false;
@@ -130,6 +140,7 @@
     let lastOverlayTaskShown = null;
     let previousColor = "";
     let hourValue = localStorage.getItem("classHour") || "";
+
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
@@ -158,28 +169,28 @@
       }
     }
 
-    // Finds the highest completed task for this hour
+    // FIXED: This now reliably finds the most recent completed task.
     async function findMostRecentTask() {
       const { data, error } = await client
         .from('airlock_status')
         .select('task,group,done')
         .eq('hour', hourValue);
 
-      let completedTasks = {};
-      for (let i = 1; i <= 5; i++) {
-        (data || []).forEach(row => {
-          if (row.group === `group${i}` && row.done) {
-            completedTasks[row.task] = (completedTasks[row.task] || 0) + 1;
-          }
-        });
-      }
-      let mostRecent = "task1", maxN = 1;
-      Object.keys(completedTasks).forEach(task => {
-        if (completedTasks[task] >= 5) {
-          let n = Number(task.replace("task", ""));
-          if (n > maxN) {
-            maxN = n;
-            mostRecent = task;
+      let counts = {};
+      (data || []).forEach(row => {
+        if (row.done) {
+          counts[row.task] = (counts[row.task] || 0) + 1;
+        }
+      });
+
+      let mostRecent = "task1";
+      let maxN = 1;
+      Object.keys(counts).forEach(taskKey => {
+        if (counts[taskKey] === 5) {
+          let num = Number(taskKey.replace("task", ""));
+          if (num > maxN) {
+            maxN = num;
+            mostRecent = taskKey;
           }
         }
       });
@@ -189,7 +200,7 @@
     async function showStatus() {
       currentTask = await findMostRecentTask();
 
-      // Query for ONLY the most recent completed task
+      // Query only the most recent completed task data for current hour.
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done,task')
@@ -208,8 +219,8 @@
           doneCount++;
           if (HULL_TASKS.includes(currentTask)) {
             el.classList.add('done', 'repair');
-            el.innerHTML = `${GROUP_LABELS[i-1]}<br>✓<br><span style="font-size:0.96em;color:#b5f7ff;">${CLUES[i-1]}</span>`;
-            hullShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]} <span style="color:#83daff;">- Repaired</span>`);
+            el.innerHTML = `${GROUP_LABELS[i-1]}<br>✓<br><span style="font-size:0.93em;color:#b5f7ff;">${REPAIR_ZONES[i-1]}</span>`;
+            hullShown.push(`<strong>${GROUP_LABELS[i-1]}:</strong> ${REPAIR_ZONES[i-1]} <span style="color:#83daff;">- Repaired</span>`);
           }
           else {
             el.classList.add('done');
