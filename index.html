@@ -119,28 +119,33 @@
   const hourValue = localStorage.getItem("classHour") || "";
   const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
 
-  // Check Task 1 completion for all groups
+  // Remove checkmarks and completed classes from all task links
+  ["task1link", "task2link", "task3link"].forEach(id=>{
+    const a = document.getElementById(id);
+    if (a) {
+      a.classList.remove("completed");
+      const prevCheck = a.querySelector(".checkmark");
+      if (prevCheck) a.removeChild(prevCheck);
+    }
+  });
+
+  // --- TASK 1 ---
   const { data: data1 } = await client
-    .from('airlock_status')
-    .select('group,done')
-    .eq('hour', hourValue)
-    .eq('task', 'task1');
+    .from('airlock_status').select('group,done').eq('hour', hourValue).eq('task', 'task1');
   const allDone1 = expectedGroups.every(grp =>
     data1?.find(d => d.group === grp && d.done)
   );
-
-  // Mark Task 1 as complete
   const task1 = document.getElementById("task1link");
-  const prevCheck = task1.querySelector(".checkmark");
-  if (prevCheck) task1.removeChild(prevCheck);
-  if (allDone1) {
+  if (allDone1 && task1) {
     task1.classList.add("completed");
     const check = document.createElement("span");
     check.className = "checkmark";
     check.textContent = "✓";
     task1.appendChild(check);
+  }
 
-    // Inject Task 2 link ONCE
+  // Inject Task 2 if Task 1 complete
+  if (allDone1) {
     if (!document.getElementById("task2link")) {
       const link2 = document.createElement("a");
       link2.href = "task.html";
@@ -154,33 +159,53 @@
       };
       document.getElementById("task2div").appendChild(link2);
     }
-
-    // Check Task 2 for all groups
+    // --- TASK 2 ---
     const { data: data2 } = await client
-      .from('airlock_status')
-      .select('group,done')
-      .eq('hour', hourValue)
-      .eq('task', 'task2');
+      .from('airlock_status').select('group,done').eq('hour', hourValue).eq('task', 'task2');
     const allDone2 = expectedGroups.every(grp =>
       data2?.find(d => d.group === grp && d.done)
     );
+    const task2 = document.getElementById("task2link");
+    if (allDone2 && task2) {
+      task2.classList.add("completed");
+      const check2 = document.createElement("span");
+      check2.className = "checkmark";
+      check2.textContent = "✓";
+      task2.appendChild(check2);
 
-    // Inject Task 3 link ONCE
-    if (allDone2 && !document.getElementById("task3link")) {
-      const link3 = document.createElement("a");
-      link3.href = "task.html";
-      link3.className = "biglink";
-      link3.id = "task3link";
-      link3.textContent = "Task 3 – Repair Module Sequencing";
-      link3.onclick = function(e) {
-        localStorage.setItem('currentTask', 'task3');
-        window.location.href = this.href;
-        return false;
-      };
-      document.getElementById("task3div").appendChild(link3);
+      // Inject Task 3 if Task 2 complete
+      if (!document.getElementById("task3link")) {
+        const link3 = document.createElement("a");
+        link3.href = "task.html";
+        link3.className = "biglink";
+        link3.id = "task3link";
+        link3.textContent = "Task 3 – Repair Module Sequencing";
+        link3.onclick = function(e) {
+          localStorage.setItem('currentTask', 'task3');
+          window.location.href = this.href;
+          return false;
+        };
+        document.getElementById("task3div").appendChild(link3);
+      }
+      // --- TASK 3 ---
+      const { data: data3 } = await client
+        .from('airlock_status').select('group,done').eq('hour', hourValue).eq('task', 'task3');
+      const allDone3 = expectedGroups.every(grp =>
+        data3?.find(d => d.group === grp && d.done)
+      );
+      const task3 = document.getElementById("task3link");
+      if (allDone3 && task3) {
+        task3.classList.add("completed");
+        const check3 = document.createElement("span");
+        check3.className = "checkmark";
+        check3.textContent = "✓";
+        task3.appendChild(check3);
+      }
+    } else {
+      // Remove Task 3 link if Task 2 becomes incomplete
+      if (document.getElementById("task3link")) document.getElementById("task3div").innerHTML = "";
     }
   } else {
-    task1.classList.remove("completed");
     // Remove Task 2 and Task 3 links if Task 1 falls incomplete
     if (document.getElementById("task2link")) document.getElementById("task2div").innerHTML = "";
     if (document.getElementById("task3link")) document.getElementById("task3div").innerHTML = "";
