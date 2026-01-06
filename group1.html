@@ -47,27 +47,27 @@
 
     // Check status (only in async function)
     async function checkCompleted() {
-      try {
-        let { data, error } = await client
-          .from('airlock_status')
-          .select('done')
-          .eq('group', 'group1')
-          .single();
-        console.log("Status data:", data);
-        if (data && data.done) {
-          document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
-        } else {
-          document.getElementById("feedback").textContent = "";
-        }
-        if (error) {
-          document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
-          console.error("Supabase error (on load):", error);
-        }
-      } catch (err) {
-        document.getElementById("feedback").textContent = "JS Error (on load): " + err;
-        console.error("JS Error (on load):", err);
-      }
+  try {
+    let { data, error } = await client
+      .from('airlock_status')
+      .select('done')
+      .eq('group', 'group1')
+      .maybeSingle();
+    console.log("Status data:", data);
+    if (data && data.done) {
+      document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+    } else {
+      document.getElementById("feedback").textContent = "";
     }
+    if (error && error.code !== "PGRST116") { // ignore no row error
+      document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
+      console.error("Supabase error (on load):", error);
+    }
+  } catch (err) {
+    document.getElementById("feedback").textContent = "JS Error (on load): " + err;
+    console.error("JS Error (on load):", err);
+  }
+}
     // Run it on load
     window.addEventListener('DOMContentLoaded', checkCompleted);
 
