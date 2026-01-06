@@ -48,12 +48,16 @@
       transition: background 0.2s;
       font-weight: bold;
       box-shadow: 0 4px 20px #2e4a7b22;
+      cursor: pointer;
     }
     .biglink.first {
       margin-top: 38px;
     }
-    .biglink:hover {
-      background: #315d8a;
+    .biglink.unlocked {
+      background: #3cb371 !important;
+      color: #fff !important;
+      opacity: 1 !important;
+      cursor: pointer !important;
     }
   </style>
 </head>
@@ -71,10 +75,52 @@
       <strong>Your task: crack the math clues, restore access, and save the outpost!</strong>
     </div>
     <a href="airlock.html" class="biglink first">Day 1 – Enter the Airlock</a>
-    <a href="compartment.html" class="biglink">Day 2 – Find Damaged Compartment</a>
-    <!-- For future modules, add more links below -->
-    <!-- <a href="lab.html" class="biglink">Day 2 – Laboratory Hazmat</a> -->
-    <a href="status.html" class="biglink" style="margin-top:11px;">Projector Status Panel</a>
+    <!-- Day 2 link will be injected by JS -->
+    <div id="nextday"></div>
+    <a href="status.html" class="biglink">Projector Status Panel</a>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function checkDay1Complete() {
+      // Query all group entries
+      const { data, error } = await client
+        .from('airlock_status')
+        .select('group,done');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return;
+      }
+      // List of expected groups for Day 1
+      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
+      // Check if all are marked done:true
+      const allDone = expectedGroups.every(grp =>
+        data.find(d => d.group === grp && d.done)
+      );
+
+      // Inject Day 2 link once all are complete
+      const nextday = document.getElementById("nextday");
+      if (allDone && !document.getElementById("day2link")) {
+        // Create the unlocked link
+        const a = document.createElement("a");
+        a.href = "compartment.html";
+        a.className = "biglink unlocked";
+        a.id = "day2link";
+        a.textContent = "Day 2 – Find Damaged Compartment (Unlocked!)";
+        nextday.appendChild(a);
+      } else if (!allDone && document.getElementById("day2link")) {
+        // In case it becomes not done (e.g. reset), remove the link
+        nextday.innerHTML = '';
+      }
+    }
+    // Run once on load
+    window.addEventListener('DOMContentLoaded', checkDay1Complete);
+    // Optional: Poll for live update every 2s
+    setInterval(checkDay1Complete, 2000);
+  </script>
 </body>
 </html>
