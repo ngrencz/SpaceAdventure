@@ -110,15 +110,7 @@
           }
         }
 
-        // **Trigger pulse immediately for current done groups (first load and after reset)**
-        document.querySelectorAll('.segment.done').forEach(el => {
-          el.classList.remove('pulse');
-          // Force reflow and pulse
-          void el.offsetWidth; // triggers reflow so animation restarts!
-          el.classList.add('pulse');
-          setTimeout(() => el.classList.remove('pulse'), 2000);
-        });
-      } catch (err) {
+        
         console.error("JS Error:", err);
       }
     }
@@ -133,7 +125,7 @@
         el.classList.add('pulse');
         setTimeout(() => el.classList.remove('pulse'), 2000);
       });
-    }, 5000);
+    }, 10000);
 
     async function resetStatus() {
       try {
