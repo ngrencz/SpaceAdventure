@@ -45,16 +45,19 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Check if already completed on load
-    window.addEventListener('DOMContentLoaded', async function() {
+    // Check status (only in async function)
+    async function checkCompleted() {
       try {
         let { data, error } = await client
           .from('airlock_status')
           .select('done')
           .eq('group', 'group1')
           .single();
+        console.log("Status data:", data);
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+        } else {
+          document.getElementById("feedback").textContent = "";
         }
         if (error) {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -64,7 +67,9 @@
         document.getElementById("feedback").textContent = "JS Error (on load): " + err;
         console.error("JS Error (on load):", err);
       }
-    });
+    }
+    // Run it on load
+    window.addEventListener('DOMContentLoaded', checkCompleted);
 
     document.getElementById("unlockBtn").onclick = async function() {
       var entry = document.getElementById("ans").value.replace(/\s/g,"");
@@ -88,13 +93,6 @@
         document.getElementById("feedback").textContent = "Try again.";
       }
     }
-    let { data, error } = await client
-  .from('airlock_status')
-  .select('done')
-  .eq('group', 'group1')
-  .single();
-console.log("Supabase initial data on load:", data);
-console.log("Supabase error on load:", error);
   </script>
 </body>
 </html>
