@@ -18,11 +18,43 @@
       margin-bottom: 44px;
       text-shadow: 0 2px 18px #1388d8;
     }
+
+    .hourbar {
+      width: 420px;
+      height: 44px;
+      font-size: 1.25em;
+      margin: 0 auto 18px auto;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 0 14px #222;
+      color: #fff;
+      transition: background 0.25s, color 0.15s;
+      position: relative;
+    }
+    .hourbar.red { background: #cc1122; }
+    .hourbar.orange { background: #ff8c1a; color: #fff2e6; }
+    .hourbar.yellow { background: #ffe035; color: #2a2a2a; }
+    .hourbar.green { background: #23d75a; color: #fff; }
+    .hourbar.pulse {
+      animation: pulsebar 1.4s 2;
+    }
+    @keyframes pulsebar {
+      0%   { box-shadow: 0 0 12px #111; }
+      25%  { box-shadow: 0 0 32px #fefefe; }
+      75%  { box-shadow: 0 0 34px #fff7c1; }
+      100% { box-shadow: 0 0 12px #111; }
+    }
+
     .status-panel {
       display: flex;
       justify-content: center;
       gap: 34px;
-      margin-top: 50px;
+      margin-top: 18px;
+      margin-bottom:18px;
     }
     .segment {
       border-radius: 18px;
@@ -38,18 +70,22 @@
       color: #aecffc;
       box-shadow: 0 0 40px #2af;
       transition: background 0.18s, color 0.18s, border 0.18s;
+      position: relative;
     }
     .segment.done {
       background: #33da92;
       color: #f7fff8;
       border: 3px solid #7afdff;
       box-shadow: 0 0 50px #13ffa0;
+    }
+    .segment.done.pulse {
       animation: pulse 1s 2;
     }
     @keyframes pulse {
-      0% { box-shadow: 0 0 50px #13ffa080; }
-      50% { box-shadow: 0 0 100px #13ffa040; }
-      100% { box-shadow: 0 0 50px #13ffa080; }
+      0%   { box-shadow: 0 0 50px #13ffa080; }
+      25%  { box-shadow: 0 0 120px #13ffa040; background: #48ffb5;}
+      75%  { box-shadow: 0 0 100px #13ffa040; }
+      100% { box-shadow: 0 0 50px #13ffa080; background: #33da92;}
     }
     .reset-btn {
       display: inline-block;
@@ -69,6 +105,7 @@
 </head>
 <body>
   <h1>Outpost IX Airlock<br>Status Panel</h1>
+  <div id="hourbar" class="hourbar red">Hour: (none selected)</div>
   <div class="status-panel">
     <div class="segment" id="stat1">Group 1</div>
     <div class="segment" id="stat2">Group 2</div>
@@ -83,43 +120,69 @@
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
+    let previousColor = "";
 
     async function showStatus() {
-      try {
-        // Query all group statuses from Supabase
-        const { data, error } = await client
-          .from('airlock_status')
-          .select('group,done');
-        if (error) {
-          console.error("Supabase error:", error);
+      // Query group status for this hour
+      const { data, error } = await client
+        .from('airlock_status')
+        .select('group,done')
+        .eq('hour', hourValue);
+
+      // For the group segments
+      let doneCount = 0;
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById("stat" + i);
+        const groupName = "group" + i;
+        const groupData = data?.find(d => d.group === groupName);
+        if (groupData && groupData.done) {
+          el.classList.add('done');
+          el.innerText = "Group " + i + "\n✓";
+          doneCount++;
+        } else {
+          el.classList.remove('done', 'pulse');
+          el.innerText = "Group " + i;
         }
-        // For each group 1–5, update display
-        for (let i = 1; i <= 5; i++) {
-          const el = document.getElementById("stat" + i);
-          const groupName = "group" + i;
-          const groupData = data?.find(d => d.group === groupName);
-          if (groupData && groupData.done) {
-            el.classList.add('done');
-            el.innerText = "Group " + i + "\n✓";
-          } else {
-            el.classList.remove('done');
-            el.innerText = "Group " + i;
-          }
-        }
-      } catch (err) {
-        console.error("JS Error:", err);
+      }
+
+      // Bar color
+      const bar = document.getElementById("hourbar");
+      let colorClass = "red";
+      if (doneCount >= 5) colorClass = "green";
+      else if (doneCount >= 3) colorClass = "yellow";
+      else if (doneCount >= 1) colorClass = "orange";
+
+      bar.classList.remove("red", "orange", "yellow", "green", "pulse");
+      bar.classList.add(colorClass);
+      bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"}
+        <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+
+      // Only pulse when the color changes (not every refresh)
+      if (previousColor !== colorClass) {
+        bar.classList.add("pulse");
+        setTimeout(() => bar.classList.remove("pulse"), 2800); // pulse duration
+        previousColor = colorClass;
       }
     }
-
     setInterval(showStatus, 1500);
     showStatus();
+
+    // Pulse group segments every 5 seconds
+    setInterval(() => {
+      document.querySelectorAll('.segment.done').forEach(el => {
+        el.classList.remove('pulse');
+        void el.offsetWidth; // force reflow
+        el.classList.add('pulse');
+        setTimeout(() => el.classList.remove('pulse'), 2000);
+      });
+    }, 5000);
 
     async function resetStatus() {
       try {
         await client
           .from('airlock_status')
           .delete()
-          .neq('group', ''); // delete all rows
+          .eq('hour', hourValue); // only clear for current hour!
         setTimeout(showStatus, 1000);
       } catch (err) {
         console.error("Reset JS Error:", err);
