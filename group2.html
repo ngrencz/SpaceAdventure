@@ -9,9 +9,9 @@
     .container { max-width:650px; margin:40px auto; background:#233140ee; border-radius:10px; padding:28px 28px 38px 28px; box-shadow:0 0 12px #252545; }
     .heading { font-size:1.7em; color:#b2e2ff; margin-bottom:20px; text-align:center; }
     .overlay { background:rgba(16, 16, 24, 0.89); padding:19px 24px; border-radius:8px; margin:0 auto; max-width:370px; box-shadow:0 2px 8px #18181844;}
-    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:80px; font-size:1em; text-align: center; margin-right: 6px;}
-    #unlockBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
-    #unlockBtn:hover { background:#3355cc; }
+    input[type="text"] { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:80px; font-size:1em; text-align:center; margin-right: 6px;}
+    #actionBtn { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; font-size:1em;}
+    #actionBtn:hover { background:#3355cc; }
     .math { font-family:'Consolas', monospace; color:#aaf; }
     .feedback { color:#6effc1; margin-top:14px; font-weight:bold; }
     .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
@@ -25,7 +25,7 @@
     <div class="overlay">
       <div class="clue"></div>
       <ul></ul>
-      <button id="unlockBtn">Unlock</button>
+      <button id="actionBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
     <a href="index.html" class="backlink">← Back to Control Panel</a>
@@ -38,11 +38,11 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Problem bank for each task
     const TASKS = {
       task1: {
         heading: "Group 2: Y-Intercept Subsystem",
         clue: 'Enter the <span class="math">y</span>-intercept (<span class="math">b</span>) for each equation in its box.',
+        button: "Unlock",
         equations: [
           { eq: "y + x = 4x + 2", ans: "2" },
           { eq: "y -2x + 4 = -x + 10", ans: "6" },
@@ -54,24 +54,34 @@
       task2: {
         heading: "Group 2: Y-Term Isolation Lab",
         clue: 'Solve for <span class="math">y</span> in each equation. Enter your answer for <span class="math">y</span> in the box. Some answers may include <span class="math">x</span>.<br><br><span style="font-size:0.93em;color:#7fc6fe">Example formatting: y = 4, y = x/3, y = (x + 3)/2</span>',
+        button: "Solve",
         equations: [
-          // Three: numbers only
-          { eq: "3y = 12", ans: "4" },                  // y = 4
-          { eq: "2y - 6 = 10", ans: "8" },              // y = 8
-          { eq: "6y + 9 = -3", ans: "-2" },             // y = -2
-          // Two: include x in answer
-          { eq: "5y = 2x + 15", ans: "(2x+15)/5" },     // y = (2x+15)/5
-          { eq: "4y - 3 = 9x", ans: "(9x+3)/4" }        // y = (9x+3)/4
+          { eq: "3y = 12", ans: "4" },
+          { eq: "2y - 6 = 10", ans: "8" },
+          { eq: "6y + 9 = -3", ans: "-2" },
+          { eq: "5y = 2x + 15", ans: "(2x+15)/5" },
+          { eq: "4y - 3 = 9x", ans: "(9x+3)/4" }
+        ]
+      },
+      task3: {
+        heading: "Group 2: Hull Repair Coordination (Starboard Side)",
+        clue: 'Solve each system of equations to find the intersection point (x, y). Type the answer as x,y in each box.<br><span style="font-size:0.95em;color:#7fc6fe">(Example: for x=2, y=5, enter 2,5)</span>',
+        button: "Repair",
+        equations: [
+          { eq: "System 1:<br>y = x + 4<br>y = -2x + 1", ans: "1,-5" },
+          { eq: "System 2:<br>y = 3x - 8<br>y = -x + 4", ans: "3,1" },
+          { eq: "System 3:<br>x + y = 7<br>y = 2x - 5", ans: "4,3" },
+          { eq: "System 4:<br>2x - y = 4<br>x + y = 4", ans: "2,2" },
+          { eq: "System 5:<br>3x - y = 1<br>x + y = 5", ans: "2,3" }
         ]
       }
-      // Add more tasks as needed!
     };
 
-    // Render the current task
     function renderTaskContent() {
       const task = TASKS[taskId] || TASKS["task1"];
       document.querySelector('.heading').textContent = task.heading;
       document.querySelector('.clue').innerHTML = '<strong>Clue:</strong> ' + task.clue;
+      document.getElementById("actionBtn").textContent = task.button;
 
       const ul = document.querySelector('ul');
       ul.innerHTML = "";
@@ -82,7 +92,7 @@
       });
     }
 
-    // Check if already completed for this group/task/hour
+    // Supabase completion check / disable logic
     async function checkCompleted() {
       try {
         let { data, error } = await client
@@ -94,10 +104,10 @@
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
-          document.getElementById("unlockBtn").disabled = true;
+          document.getElementById("actionBtn").disabled = true;
         } else {
           document.getElementById("feedback").textContent = "";
-          document.getElementById("unlockBtn").disabled = false;
+          document.getElementById("actionBtn").disabled = false;
         }
         if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -105,7 +115,7 @@
         }
       } catch (err) {
         document.getElementById("feedback").textContent = "JS Error (on load): " + err;
-        console.error("JS Error (on load):", err);
+        console.error("JS Error:", err);
       }
     }
 
@@ -114,18 +124,24 @@
       checkCompleted();
     });
 
-    document.getElementById("unlockBtn").onclick = async function() {
+    document.getElementById("actionBtn").onclick = async function() {
       const task = TASKS[taskId] || TASKS["task1"];
       let correct = true;
       task.equations.forEach((e, i) => {
-        const answer = document.getElementById("ans"+(i+1)).value.trim().replace(/\s+/g, '');
-        const target = e.ans.replace(/\s+/g, '');
+        let answer = document.getElementById("ans"+(i+1)).value.trim();
+        // For intersection points in Task 3, strip spaces and parentheses
+        if (taskId === "task3") {
+          answer = answer.replace(/\s+/g, '').replace(/[()]/g, '');
+        } else {
+          answer = answer.replace(/\s+/g, '');
+        }
+        let target = e.ans.replace(/\s+/g, '');
         if (answer.toLowerCase() !== target.toLowerCase()) correct = false;
       });
 
       if (correct) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
-        document.getElementById("unlockBtn").disabled = true;
+        document.getElementById("actionBtn").disabled = true;
         try {
           const { error, data } = await client
             .from('airlock_status')
