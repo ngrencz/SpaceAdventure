@@ -13,50 +13,78 @@
     input { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:88%; }
     button { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; }
     button:hover { background:#3355cc; }
-    .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
-    .backlink:hover {background:#2c334b;}
     .math { font-family:'Consolas', monospace; color:#aaf; }
     .feedback { color:#6effc1; margin-top:14px; font-weight:bold; }
+    .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
+    .backlink:hover {background:#2c334b;}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
     <div class="heading">Group 5: Equation Builder</div>
     <div class="overlay">
       <div>
-        <strong>Clue:</strong> Find the equation of the line (in <span class="math">y=mx+b</span> form) that passes through both points:
+        <strong>Clue:</strong> Find the equation of the line (in <span class="math">y = mx + b</span> form) that passes through both points:
       </div>
       <ul>
         <li>(2, 5)</li>
         <li>(4, 9)</li>
       </ul>
       <input type="text" id="ans" placeholder="e.g. y=2x+1">
-      <button onclick="checkAnswer()">Unlock</button>
+      <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
     <a href="airlock.html" class="backlink">← Back to Control Panel</a>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Supabase setup
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    window.onload = async function() {
-      let { data } = await supabase.from('airlock_status').select('done').eq('group', 'group5').single();
-      if (data && data.done) {
-        document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+    async function checkCompleted() {
+      try {
+        let { data, error } = await client
+          .from('airlock_status')
+          .select('done')
+          .eq('group', 'group5')
+          .maybeSingle();
+        console.log("Status data:", data);
+        if (data && data.done) {
+          document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+        } else {
+          document.getElementById("feedback").textContent = "";
+        }
+        if (error && error.code !== "PGRST116") {
+          document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
+          console.error("Supabase error (on load):", error);
+        }
+      } catch (err) {
+        document.getElementById("feedback").textContent = "JS Error (on load): " + err;
+        console.error("JS Error (on load):", err);
       }
     }
+    window.addEventListener('DOMContentLoaded', checkCompleted);
 
-    async function checkAnswer() {
+    document.getElementById("unlockBtn").onclick = async function() {
       var entry = document.getElementById("ans").value.replace(/\s/g,"").toLowerCase();
-      // Find line through (2,5) and (4,9)
-      // slope: m = (9-5)/(4-2) = 2; b: 5=2*2+b -> b=1
       if (entry === "y=2x+1") {
-        document.getElementById("feedback").textContent = "Correct! System restored. Return to the Control Panel.";
-        await supabase.from('airlock_status').upsert([{ group: 'group5', done: true }]);
+        document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        try {
+          const { error, data } = await client
+            .from('airlock_status')
+            .upsert([{ group: 'group5', done: true }]);
+          if (error) {
+            document.getElementById("feedback").textContent += "\nError: " + error.message;
+            console.error("Supabase error:", error);
+          } else {
+            console.log("Supabase upsert OK", data);
+          }
+        } catch (err) {
+          document.getElementById("feedback").textContent += "\nJS Error: " + err;
+          console.error("JS Error:", err);
+        }
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
