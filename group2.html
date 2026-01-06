@@ -4,16 +4,27 @@
   <meta charset="UTF-8">
   <title>Group 2 – Y-Intercept Subsystem</title>
   <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
-  <!-- ...styles and Supabase JS as above... -->
-  <style>/* Paste styles from group1.html here, and update as desired */</style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { background:#1a191b; color:#fff; font-family:'Orbitron', Arial, sans-serif; }
+    .container { max-width:650px; margin:40px auto; background:#233140ee; border-radius:10px; padding:28px 28px 38px 28px; box-shadow:0 0 12px #252545; }
+    .heading { font-size:1.7em; color:#b2e2ff; margin-bottom:20px; text-align:center; }
+    .overlay { background:rgba(16, 16, 24, 0.89); padding:19px 24px; border-radius:8px; margin:0 auto; max-width:370px; box-shadow:0 2px 8px #18181844;}
+    input, button { font-size:1em; margin-top:8px; }
+    input { padding:8px; background:#232a39; color:#fff; border:1px solid #64aafc; border-radius:5px; width:88%; }
+    button { margin-top:14px; padding:6px 22px; background:#5577ff; color:#fff; border:none; border-radius:7px; cursor:pointer; }
+    button:hover { background:#3355cc; }
+    .math { font-family:'Consolas', monospace; color:#aaf; }
+    .feedback { color:#6effc1; margin-top:14px; font-weight:bold; }
+    .backlink { display:block; background:#353979; color:#fff; border-radius:8px; padding:9px; text-align:center; text-decoration:none; margin-top:32px; font-weight:700;}
+    .backlink:hover {background:#2c334b;}
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="heading">Group 2: Y-Intercept Subsystem</div>
     <div class="overlay">
       <div>
-        <strong>Clue:</strong> Find the y-intercepts (<span class="math">b</span>) for each equation, and enter them in order, comma-separated.
+        <strong>Clue:</strong> Find the y-intercept (<span class="math">b</span>) for each equation below. Enter your answers in order, separated by commas.
       </div>
       <ul>
         <li><span class="math">y = 4x + 2</span></li>
@@ -21,26 +32,64 @@
         <li><span class="math">y = 3x - 1</span></li>
       </ul>
       <input type="text" id="ans" placeholder="e.g. 2,6,-1">
-      <button onclick="checkAnswer()">Unlock</button>
+      <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
     <a href="airlock.html" class="backlink">← Back to Control Panel</a>
   </div>
+
+  <!-- Supabase and script go at the end, after HTML is loaded -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    window.onload = async function() {
-      let { data } = await supabase.from('airlock_status').select('done').eq('group', 'group2').single();
-      if (data && data.done) {
-        document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Check status (only in async function)
+    async function checkCompleted() {
+      try {
+        let { data, error } = await client
+          .from('airlock_status')
+          .select('done')
+          .eq('group', 'group2')
+          .maybeSingle();
+        console.log("Status data:", data);
+        if (data && data.done) {
+          document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+        } else {
+          document.getElementById("feedback").textContent = "";
+        }
+        if (error && error.code !== "PGRST116") { // ignore no row error
+          document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
+          console.error("Supabase error (on load):", error);
+        }
+      } catch (err) {
+        document.getElementById("feedback").textContent = "JS Error (on load): " + err;
+        console.error("JS Error (on load):", err);
       }
     }
-    async function checkAnswer() {
+
+    // Run it on load
+    window.addEventListener('DOMContentLoaded', checkCompleted);
+
+    document.getElementById("unlockBtn").onclick = async function() {
       var entry = document.getElementById("ans").value.replace(/\s/g,"");
       if (entry === "2,6,-1") {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
-        await supabase.from('airlock_status').upsert([{ group: 'group2', done: true }]);
+        try {
+          const { error, data } = await client
+            .from('airlock_status')
+            .upsert([{ group: 'group2', done: true }]);
+          if (error) {
+            document.getElementById("feedback").textContent += "\nError: " + error.message;
+            console.error("Supabase error:", error);
+          } else {
+            console.log("Supabase upsert OK", data);
+          }
+        } catch (err) {
+          document.getElementById("feedback").textContent += "\nJS Error: " + err;
+          console.error("JS Error:", err);
+        }
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
@@ -48,4 +97,3 @@
   </script>
 </body>
 </html>
-
