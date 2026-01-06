@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Group 2 – Y-Intercept Subsystem</title>
+  <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
+  <!-- ...styles and Supabase JS as above... -->
+  <style>/* Paste styles from group1.html here, and update as desired */</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="heading">Group 2: Y-Intercept Subsystem</div>
+    <div class="overlay">
+      <div>
+        <strong>Clue:</strong> Find the y-intercepts (<span class="math">b</span>) for each equation, and enter them in order, comma-separated.
+      </div>
+      <ul>
+        <li><span class="math">y = 4x + 2</span></li>
+        <li><span class="math">y = -x + 6</span></li>
+        <li><span class="math">y = 3x - 1</span></li>
+      </ul>
+      <input type="text" id="ans" placeholder="e.g. 2,6,-1">
+      <button onclick="checkAnswer()">Unlock</button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <a href="airlock.html" class="backlink">← Back to Control Panel</a>
+  </div>
+  <script>
+    const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    window.onload = async function() {
+      let { data } = await supabase.from('airlock_status').select('done').eq('group', 'group2').single();
+      if (data && data.done) {
+        document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+      }
+    }
+    async function checkAnswer() {
+      var entry = document.getElementById("ans").value.replace(/\s/g,"");
+      if (entry === "2,6,-1") {
+        document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        await supabase.from('airlock_status').upsert([{ group: 'group2', done: true }]);
+      } else {
+        document.getElementById("feedback").textContent = "Try again.";
+      }
+    }
+  </script>
+</body>
+</html>
+
