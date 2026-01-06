@@ -41,6 +41,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const hourValue = localStorage.getItem("classHour") || "";
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
@@ -51,6 +52,7 @@
           .from('airlock_status')
           .select('done')
           .eq('group', 'group1')
+          .eq('hour', hourValue)
           .maybeSingle();
         console.log("Status data:", data);
         if (data && data.done) {
@@ -82,7 +84,7 @@
     try {
       const { error, data } = await client
         .from('airlock_status')
-        .upsert([{ group: 'group1', done: true }]);
+        .upsert([{ group: 'group1', done: true, hour: hourValue }]);
       if (error) {
         document.getElementById("feedback").textContent += "\nError: " + error.message;
         console.error("Supabase error:", error);
