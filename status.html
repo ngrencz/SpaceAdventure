@@ -66,7 +66,6 @@
     }
     .reset-btn:hover { background: #133360; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <h1>Outpost IX Airlock<br>Status Panel</h1>
@@ -78,38 +77,52 @@
     <div class="segment" id="stat5">Group 5</div>
   </div>
   <button class="reset-btn" onclick="resetStatus()">Reset Status</button>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function showStatus() {
-      const { data, error } = await supabase
-        .from('airlock_status')
-        .select('group,done');
-      for (let i = 1; i <= 5; i++) {
-        const el = document.getElementById("stat" + i);
-        const groupData = data?.find(d => d.group === 'group' + i);
-        if (groupData && groupData.done) {
-          el.classList.add('done');
-          el.innerText = "Group " + i + "\n✓";
-        } else {
-          el.classList.remove('done');
-          el.innerText = "Group " + i;
+      try {
+        // Query all group statuses from Supabase
+        const { data, error } = await client
+          .from('airlock_status')
+          .select('group,done');
+        if (error) {
+          console.error("Supabase error:", error);
         }
+        // For each group 1–5, update display
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById("stat" + i);
+          const groupName = "group" + i;
+          const groupData = data?.find(d => d.group === groupName);
+          if (groupData && groupData.done) {
+            el.classList.add('done');
+            el.innerText = "Group " + i + "\n✓";
+          } else {
+            el.classList.remove('done');
+            el.innerText = "Group " + i;
+          }
+        }
+      } catch (err) {
+        console.error("JS Error:", err);
       }
     }
-    // Refresh every 1.5 seconds for live updates
+
     setInterval(showStatus, 1500);
     showStatus();
 
     async function resetStatus() {
-      // Delete all rows in table (for fresh start if needed)
-      await supabase
-        .from('airlock_status')
-        .delete()
-        .neq('group', '');
-      setTimeout(showStatus, 1000);
+      try {
+        await client
+          .from('airlock_status')
+          .delete()
+          .neq('group', ''); // delete all rows
+        setTimeout(showStatus, 1000);
+      } catch (err) {
+        console.error("Reset JS Error:", err);
+      }
     }
   </script>
 </body>
