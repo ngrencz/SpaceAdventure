@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Airlock Control – Asteroid Outpost IX</title>
+  <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #16171b;
+      color: #e0e4ef;
+      font-family: 'Orbitron', Arial, sans-serif;
+    }
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: #23243acc;
+      border-radius: 13px;
+      box-shadow: 0 0 10px #222;
+      padding: 26px 26px 30px 26px;
+    }
+    h1 {
+      text-align: center;
+      color: #93b4ff;
+      margin-bottom: 6px;
+    }
+    .instructions {
+      color: #afcdf7;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .panel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 28px;
+      gap: 18px;
+    }
+    .panelspot {
+      background: #1a2028;
+      border: 2px solid #275fa3;
+      color: #e0e8ff;
+      border-radius: 14px;
+      flex: 1;
+      height: 122px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.1em;
+      box-shadow: 0 2px 10px #223b5c55;
+      transition: border-color 0.16s, background 0.16s;
+      text-decoration: none;
+      margin: 0 2px;
+    }
+    .panelspot:hover {
+      background: #16366a;
+      border-color: #b7e0fc;
+      color: #dafcff;
+      cursor: pointer;
+    }
+    .panelspot.done {
+      background: #215e3a;
+      border-color: #22e87e;
+      color: #e5fff5;
+    }
+    .return {
+      display: block;
+      background: #404769;
+      color: #fff;
+      border-radius: 8px;
+      padding: 9px;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 32px;
+      transition: background 0.15s;
+      font-weight: 700;
+    }
+    .return:hover {
+      background: #2c344b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Airlock Access: Math Control Panel</h1>
+    <div class="instructions">
+      Five security segments protect the main airlock.<br>
+      <strong>Each group, choose your link below and solve your puzzle.</strong>
+      <br>
+      When all sections are unlocked, the airlock will be open!
+    </div>
+    <div class="panel">
+      <a href="group1.html" class="panelspot" id="spot1">Group 1<br>Slope Solver</a>
+      <a href="group2.html" class="panelspot" id="spot2">Group 2<br>Y-Intercepts</a>
+      <a href="group3.html" class="panelspot" id="spot3">Group 3<br>Slope-Intercept</a>
+      <a href="group4.html" class="panelspot" id="spot4">Group 4<br>Linear Equations</a>
+      <a href="group5.html" class="panelspot" id="spot5">Group 5<br>System Restore</a>
+    </div>
+    <a href="index.html" class="return">← Return to Mission Briefing</a>
+  </div>
+  <!-- For future: Optionally add code to light up completed segments if using localStorage -->
+  <script>
+    // Optional: If you want to show which groups are done with localStorage
+    for(let i=1; i<=5; i++){
+      if(localStorage.getItem("group"+i+"_done")=="yes"){
+        document.getElementById("spot"+i).classList.add("done");
+      }
+    }
+  </script>
+</body>
+</html>
