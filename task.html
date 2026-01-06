@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Outpost IX Mission Task</title>
+  <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body { background: #0e1834; color: #cbe7ff; font-family: 'Orbitron', Arial, sans-serif; margin: 0;}
+    .container { max-width:680px; margin:56px auto 0 auto; background:#203266dd; border-radius:14px; padding:38px 38px 48px 38px; box-shadow:0 0 22px #273b83; }
+    h1 { color: #7fc6ff; font-size:2.25em; margin-bottom:16px;}
+    .story { color:#b4ffe8; font-size:1.18em; margin-bottom:24px;}
+    .instructions { color:#50ee9e; font-size:1.12em; margin-bottom: 26px;}
+    .links { margin-top: 12px; }
+    .glink {
+      display:block; background:#345ba9; color:#fff; border-radius:8px; font-size:1.08em; padding:15px; margin-bottom: 17px;
+      text-decoration:none; text-align:center; font-weight:bold; transition: background 0.2s;
+      box-shadow: 0 4px 16px #373b6e22; cursor: pointer;
+    }
+    .glink:hover { background:#29ad77; }
+    .return { display: block; background:#535b89; margin-top:42px; color:#fff; border-radius:8px; padding:11px;
+      text-align:center; text-decoration:none; font-weight:700; transition: background 0.17s;}
+    .return:hover { background: #29334b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="taskTitle"></h1>
+    <div class="story" id="taskStory"></div>
+    <div class="instructions" id="taskInst"></div>
+    <div class="links" id="groupLinks"></div>
+    <a href="index.html" class="return">← Return to Mission Briefing</a>
+  </div>
+  <script>
+    // Get selected task from localStorage
+    const taskId = localStorage.getItem('currentTask') || 'task1';
+    // Define your per-task data
+    const TASKS = {
+      task1: {
+        title: "Task 1 – Enter the Airlock",
+        story: "The outpost airlock is sealed by five math puzzles. Your team must solve your assigned segment to gain entry. Each group is responsible for a security section.",
+        instructions: "Go to your group puzzle below and solve the challenge. Once all five groups succeed, the airlock will unlock.",
+        linkText: "Begin Task 1",
+        groupLinks: [
+          { href: "group1.html", text: "Group 1: Slope Solver" },
+          { href: "group2.html", text: "Group 2: Y-Intercepts" },
+          { href: "group3.html", text: "Group 3: Slope-Intercept Cipher" },
+          { href: "group4.html", text: "Group 4: Linear Equations" },
+          { href: "group5.html", text: "Group 5: Equation Builder" }
+        ]
+      },
+      task2: {
+        title: "Task 2 – Find Damaged Compartment",
+        story: "Sensor array data is corrupted. Each group must solve new math challenges to decrypt a location clue for the damaged section. Work together to assemble the complete repair coordinates.",
+        instructions: "After unlocking your segment, confer with other groups to find the full location of the damage aboard Outpost IX. Structural lockdown will clear when all groups succeed.",
+        linkText: "Begin Task 2",
+        groupLinks: [
+          { href: "group1.html", text: "Group 1: X-Term Override" },
+          { href: "group2.html", text: "Group 2: Y-Term Isolation Lab" },
+          { href: "group3.html", text: "Group 3: Equation Solution Counter" },
+          { href: "group4.html", text: "Group 4: Slope Tagger" },
+          { href: "group5.html", text: "Group 5: Y-Intercept Identifier" }
+        ]
+      }
+      // Add more tasks if needed
+    };
+    // Select data for this taskId
+    const task = TASKS[taskId] || TASKS['task1'];
+
+    // Populate template
+    document.getElementById('taskTitle').textContent = task.title;
+    document.getElementById('taskStory').textContent = task.story;
+    document.getElementById('taskInst').textContent = task.instructions;
+
+    // Group links
+    const linksDiv = document.getElementById('groupLinks');
+    task.groupLinks.forEach(link => {
+      const a = document.createElement('a');
+      a.className = 'glink';
+      a.href = link.href;
+      a.textContent = link.text;
+      // Optionally, when clicked, set the group for localStorage so each group page can read which group
+      a.onclick = function() { localStorage.setItem('currentGroup', link.text.split(':')[0].toLowerCase().replace(' ','') ); }
+      linksDiv.appendChild(a);
+    });
+  </script>
+</body>
+</html>
