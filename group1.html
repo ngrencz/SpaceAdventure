@@ -27,9 +27,11 @@
         <strong>Clue:</strong> Solve for the slope (<span class="math">m</span>) of each equation. <br>Type each answer in its own box.
       </div>
       <ul>
-        <li><span class="math">y = 2x + 4</span> &rarr; <input type="text" id="ans1" maxlength="4"></li>
-        <li><span class="math">y = -3x + 7</span> &rarr; <input type="text" id="ans2" maxlength="4"></li>
-        <li><span class="math">y = x - 5</span> &rarr; <input type="text" id="ans3" maxlength="4"></li>
+        <li><span class="math">2y = 4x + 4</span> &rarr; <input type="text" id="ans1" maxlength="4"></li>
+        <li><span class="math">y + 3x = 7</span> &rarr; <input type="text" id="ans2" maxlength="4"></li>
+        <li><span class="math">y - x = - 5</span> &rarr; <input type="text" id="ans3" maxlength="4"></li>
+        <li><span class="math">y + 4x = 6x - 7</span> &rarr; <input type="text" id="ans4" maxlength="4"></li>
+        <li><span class="math">2y + 7x = 2x + y - 10</span> &rarr; <input type="text" id="ans5" maxlength="4"></li>
       </ul>
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
@@ -72,28 +74,29 @@
       var a1 = document.getElementById("ans1").value.trim();
       var a2 = document.getElementById("ans2").value.trim();
       var a3 = document.getElementById("ans3").value.trim();
+      var a4 = document.getElementById("ans4").value.trim();
+      var a5 = document.getElementById("ans5").value.trim();
 
-      if (a1 === "2" && a2 === "-3" && (a3 === "1" || a3.toLowerCase() === "x")) {
-        // Accept "1" as correct for the slope of y = x - 5
-        document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
-        try {
-          const { error, data } = await client
-            .from('airlock_status')
-            .upsert([{ group: 'group1', done: true }]);
-          if (error) {
-            document.getElementById("feedback").textContent += "\nError: " + error.message;
-            console.error("Supabase error:", error);
-          } else {
-            console.log("Supabase upsert OK", data);
-          }
-        } catch (err) {
-          document.getElementById("feedback").textContent += "\nJS Error: " + err;
-          console.error("JS Error:", err);
-        }
+      if (a1 === "2" && a2 === "-3" && a3 === "1" && a4 === "2" && a5 === "-5") {
+    document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+    try {
+      const { error, data } = await client
+        .from('airlock_status')
+        .upsert([{ group: 'groupX', done: true }]);
+      if (error) {
+        document.getElementById("feedback").textContent += "\nError: " + error.message;
+        console.error("Supabase error:", error);
       } else {
-        document.getElementById("feedback").textContent = "Try again.";
+        console.log("Supabase upsert OK", data);
       }
+    } catch (err) {
+      document.getElementById("feedback").textContent += "\nJS Error: " + err;
+      console.error("JS Error:", err);
     }
+  } else {
+    document.getElementById("feedback").textContent = "Try again.";
+  }
+}
   </script>
 </body>
 </html>
