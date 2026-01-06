@@ -28,8 +28,10 @@
       </div>
       <ul>
         <li><span class="math">y = 2x + 4</span> &rarr; <input type="text" id="ans1" maxlength="4"></li>
-        <li><span class="math">y = 4x - 4</span> &rarr; <input type="text" id="ans2" maxlength="4"></li>
-        <li><span class="math">y = -x + 12</span> &rarr; <input type="text" id="ans3" maxlength="4"></li>
+        <li><span class="math">y - x = 3x - 4</span> &rarr; <input type="text" id="ans2" maxlength="4"></li>
+        <li><span class="math">y - 2 = -x + 10</span> &rarr; <input type="text" id="ans3" maxlength="4"></li>
+        <li><span class="math">y - 2x + 1 = 2x - 3</span> &rarr; <input type="text" id="ans4" maxlength="4"></li>
+        <li><span class="math">2y - 4x = -2x + 12</span> &rarr; <input type="text" id="ans5" maxlength="4"></li>
       </ul>
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
@@ -69,7 +71,9 @@
       var a1 = document.getElementById("ans1").value.trim();
       var a2 = document.getElementById("ans2").value.trim();
       var a3 = document.getElementById("ans3").value.trim();
-      if (a1 === "2" && a2 === "3" && a3 === "4") {
+      var a4 = document.getElementById("ans4").value.trim();
+      var a5 = document.getElementById("ans5").value.trim();
+      if (a1 === "2" && a2 === "3" && a3 === "4" && a4 === "3" && a5 === "2") {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
         try {
           const { error, data } = await client
