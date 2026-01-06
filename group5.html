@@ -76,7 +76,7 @@
       // Accept decimal and fraction forms for a3, -x and -1x for a2
       const ok_a1 = a1 === "y=x+1";
       const ok_a2 = (a2 === "y=-x+3" || a2 === "y=-1x+3");
-      const ok_a3 = (a3 === "y=0.25x+5.5" || a3 === "y=1/4x+5.5");
+      const ok_a3 = (a3 === "y=0.25x+5.5" || a3 === "y=1/4x+5 1/2" || a3 === "y=1/4x+11/2");
 
       if (ok_a1 && ok_a2 && ok_a3) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
