@@ -49,9 +49,13 @@
       font-weight: bold;
       box-shadow: 0 4px 20px #2e4a7b22;
       cursor: pointer;
+      position: relative;
     }
-    .biglink.first {
-      margin-top: 38px;
+    .checkmark {
+      color: #18ff81;
+      font-size: 1.2em;
+      margin-left: 12px;
+      font-weight: bold;
     }
     .biglink.unlocked {
       background: #3cb371 !important;
@@ -74,9 +78,7 @@
       Now, there are no instructions—only scattered equations remain.<br>
       <strong>Your task: crack the math clues, restore access, and save the outpost!</strong>
     </div>
-    <a href="airlock.html" class="biglink first">Day 1 – Enter the Airlock</a>
-    <!-- Day 2 link will be injected by JS -->
-    <div id="nextday"></div>
+    <div id="navlinks"></div>
     <a href="status.html" class="biglink">Projector Status Panel</a>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -85,8 +87,18 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function checkDay1Complete() {
-      // Query all group entries
+    async function updateLinks() {
+      // Static navigation links for Day 1 groups
+      const links = [
+        { href: "airlock.html", label: "Day 1 – Enter the Airlock", group: null },
+        { href: "group1.html", label: "Group 1", group: "group1" },
+        { href: "group2.html", label: "Group 2", group: "group2" },
+        { href: "group3.html", label: "Group 3", group: "group3" },
+        { href: "group4.html", label: "Group 4", group: "group4" },
+        { href: "group5.html", label: "Group 5", group: "group5" }
+      ];
+
+      // Query completion status
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done');
@@ -95,32 +107,48 @@
         console.error('Supabase error:', error);
         return;
       }
-      // List of expected groups for Day 1
-      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
-      // Check if all are marked done:true
-      const allDone = expectedGroups.every(grp =>
-        data.find(d => d.group === grp && d.done)
-      );
 
-      // Inject Day 2 link once all are complete
-      const nextday = document.getElementById("nextday");
-      if (allDone && !document.getElementById("day2link")) {
-        // Create the unlocked link
+      // Map completion status
+      const statusMap = {};
+      if (data && Array.isArray(data)) {
+        data.forEach(rec => {
+          statusMap[rec.group] = rec.done;
+        });
+      }
+
+      // Render nav links
+      const nav = document.getElementById("navlinks");
+      nav.innerHTML = '';
+      links.forEach(link => {
         const a = document.createElement("a");
-        a.href = "compartment.html";
-        a.className = "biglink unlocked";
-        a.id = "day2link";
-        a.textContent = "Day 2 – Find Damaged Compartment (Unlocked!)";
-        nextday.appendChild(a);
-      } else if (!allDone && document.getElementById("day2link")) {
-        // In case it becomes not done (e.g. reset), remove the link
-        nextday.innerHTML = '';
+        a.href = link.href;
+        a.className = "biglink";
+        a.textContent = link.label;
+        if (link.group && statusMap[link.group]) {
+          // Add checkmark for completed
+          const check = document.createElement("span");
+          check.className = "checkmark";
+          check.textContent = "✓";
+          a.appendChild(check);
+        }
+        nav.appendChild(a);
+      });
+
+      // Show Day 2 only if Day 1 is all done
+      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
+      const allDone = expectedGroups.every(grp => statusMap[grp]);
+      if (allDone) {
+        const a2 = document.createElement("a");
+        a2.href = "compartment.html";
+        a2.className = "biglink";
+        a2.textContent = "Day 2 – Find Damaged Compartment";
+        // You can add a checkmark or special color if you want for Day 2:
+        // a2.classList.add("unlocked"); // (optional, to color differently)
+        nav.appendChild(a2);
       }
     }
-    // Run once on load
-    window.addEventListener('DOMContentLoaded', checkDay1Complete);
-    // Optional: Poll for live update every 2s
-    setInterval(checkDay1Complete, 2000);
+    window.addEventListener('DOMContentLoaded', updateLinks);
+    setInterval(updateLinks, 2000); // live update checkmarks and unlock
   </script>
 </body>
 </html>
