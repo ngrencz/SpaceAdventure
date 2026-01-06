@@ -51,6 +51,7 @@
           .from('airlock_status')
           .select('done')
           .eq('group', 'group4')
+          .eq('hour', hourValue)
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
