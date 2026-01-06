@@ -5,103 +5,33 @@
   <title>Outpost Status Panel</title>
   <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: #101130;
-      color: #bfefff;
-      font-family: 'Orbitron', Arial, sans-serif;
-      text-align: center;
-    }
-    h1 {
-      font-size: 2.1em;
-      color: #51cfff;
-      margin-top: 28px;
-      margin-bottom: 44px;
-      text-shadow: 0 2px 18px #1388d8;
-    }
+    body { background: #101130; color: #bfefff; font-family: 'Orbitron', Arial, sans-serif; text-align: center;}
+    h1 { font-size: 2.1em; color: #51cfff; margin-top: 28px; margin-bottom: 44px; text-shadow: 0 2px 18px #1388d8;}
     .hourbar {
-      width: 420px;
-      height: 44px;
-      font-size: 1.25em;
-      margin: 0 auto 18px auto;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      letter-spacing: 2px;
-      box-shadow: 0 0 14px #222;
-      color: #fff;
-      transition: background 0.25s, color 0.15s, box-shadow 0.25s;
-      position: relative;
+      width: 420px; height: 44px; font-size: 1.25em; margin: 0 auto 18px auto; border-radius: 22px;
+      display: flex; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 2px;
+      box-shadow: 0 0 14px #222; color: #fff; transition: background 0.25s, color 0.15s, box-shadow 0.25s; position: relative;
     }
-    .hourbar.red {
-      background: #cc2530;
-      color: #fffbe9;
-      box-shadow: 0 0 28px #fd4a4a, 0 0 12px #660f19;
-    }
-    .hourbar.orange {
-      background: #cc7000;
-      color: #fff2e6;
-      box-shadow: 0 0 36px #ffb54a, 0 0 12px #7a3c00;
-    }
-    .hourbar.yellow {
-      background: #ffe035;
-      color: #2a2a2a;
-      box-shadow: 0 0 32px #fff57a, 0 0 10px #d2ba0a;
-    }
-    .hourbar.green {
-      background: #23d75a;
-      color: #fff;
-      box-shadow: 0 0 44px #33ff99, 0 0 14px #16a064;
-    }
-    .hourbar.pulse {
-      animation: pulsebar 1.4s 2;
-    }
-    @keyframes pulsebar {
-      0%   { }
-      20%  { box-shadow: 0 0 38px #fd4a4a, 0 0 18px #660f19; }
-      40%  { box-shadow: 0 0 52px #ffb54a, 0 0 22px #7a3c00; }
-      60%  { box-shadow: 0 0 56px #fff57a, 0 0 16px #e2df45; }
-      80%  { box-shadow: 0 0 48px #33ff99, 0 0 20px #16a064; }
-      100% { }
-    }
-    .status-panel {
-      display: flex;
-      justify-content: center;
-      gap: 34px;
-      margin-top: 18px;
-      margin-bottom:18px;
-    }
+    .hourbar.red { background: #cc2530; color: #fffbe9; box-shadow: 0 0 28px #fd4a4a, 0 0 12px #660f19;}
+    .hourbar.orange { background: #cc7000; color: #fff2e6; box-shadow: 0 0 36px #ffb54a, 0 0 12px #7a3c00;}
+    .hourbar.yellow { background: #ffe035; color: #2a2a2a; box-shadow: 0 0 32px #fff57a, 0 0 10px #d2ba0a;}
+    .hourbar.green { background: #23d75a; color: #fff; box-shadow: 0 0 44px #33ff99, 0 0 14px #16a064;}
+    .hourbar.pulse { animation: pulsebar 1.4s 2;}
+    @keyframes pulsebar { 0%{} 20%{box-shadow:0 0 38px #fd4a4a,0 0 18px #660f19;} 40%{box-shadow:0 0 52px #ffb54a,0 0 22px #7a3c00;} 60%{box-shadow:0 0 56px #fff57a,0 0 16px #e2df45;} 80%{box-shadow:0 0 48px #33ff99,0 0 20px #16a064;} 100%{} }
+    .status-panel { display: flex; justify-content: center; gap: 34px; margin-top: 18px; margin-bottom:18px;}
     .segment {
-      border-radius: 18px;
-      width: 120px;
-      height: 120px;
-      background: #283358;
-      border: 3px solid #385b81;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3em;
-      color: #aecffc;
-      box-shadow: 0 0 40px #2af;
-      transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
+      border-radius: 18px; width: 120px; height: 120px; background: #283358; border: 3px solid #385b81;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.3em;
+      color: #aecffc; box-shadow: 0 0 40px #2af; transition: background 0.18s, color 0.18s, border 0.18s, box-shadow 0.18s;
       position: relative;
     }
-    .segment.done {
-      background: #33da92;
-      color: #f7fff8;
-      border: 3px solid #7afdff;
-      box-shadow: 0 0 50px #13ffa0, 0 0 14px #23d75a;
-    }
-    .segment.done.pulse {
-      animation: pulse 1s 2;
-    }
+    .segment.done { background: #33da92; color: #f7fff8; border: 3px solid #7afdff; box-shadow: 0 0 50px #13ffa0, 0 0 14px #23d75a;}
+    .segment.done.pulse { animation: pulse 1s 2;}
     @keyframes pulse {
-      0%   { box-shadow: 0 0 50px #13ffa080; }
-      25%  { box-shadow: 0 0 120px #48ffb5, 0 0 20px #54ffb0;}
-      75%  { box-shadow: 0 0 100px #13ffa040, 0 0 18px #23d75a; }
-      100% { box-shadow: 0 0 50px #13ffa080; background: #33da92;}
+      0%{box-shadow:0 0 50px #13ffa080;}
+      25%{box-shadow:0 0 120px #48ffb5,0 0 20px #54ffb0;}
+      75%{box-shadow:0 0 100px #13ffa040,0 0 18px #23d75a;}
+      100%{box-shadow:0 0 50px #13ffa080; background:#33da92;}
     }
     .clue-panel {
       display: none;
@@ -112,23 +42,9 @@
       padding: 24px 14px 20px 14px;
       box-shadow: 0 0 32px #17adfc22, 0 2px 28px #20bb7f22;
     }
-    .clue-title {
-      color:#53ffaa; 
-      font-size:1.14em; 
-      margin-bottom:12px; 
-      text-shadow:0 2px 14px #1b9b7b44;
-    }
-    .clue-text-list {
-      font-size:1.07em; 
-      color:#aefcca; 
-      letter-spacing: 1.5px;
-    }
-    .loc-final {
-      font-size: 1.23em;
-      color: #7cdcf8;
-      margin-top: 30px;
-      font-weight: bold;
-    }
+    .clue-title { color:#53ffaa; font-size:1.14em; margin-bottom:12px; text-shadow:0 2px 14px #1b9b7b44; }
+    .clue-text-list { font-size:1.07em; color:#aefcca; letter-spacing: 1.5px;}
+    .loc-final { font-size: 1.23em; color: #7cdcf8; margin-top: 30px; font-weight: bold;}
     .overlay-wrap {
       display: none;
       position: fixed;
@@ -148,10 +64,7 @@
       text-shadow: 0 6px 30px #17b7fd77;
       animation: accessFade 1.2s;
     }
-    @keyframes accessFade {
-      0%   { opacity: 0;}
-      100% { opacity:1;}
-    }
+    @keyframes accessFade { 0% { opacity: 0;} 100% { opacity:1;} }
     .reset-btn {
       display: inline-block;
       margin-top: 64px;
@@ -178,23 +91,19 @@
     <div class="segment" id="stat4">Group 4</div>
     <div class="segment" id="stat5">Group 5</div>
   </div>
-
-  <!-- CLUE Panel (hidden until clues start) -->
+  <!-- CLUE Panel -->
   <div id="cluePanel" class="clue-panel">
     <div class="clue-title">Clues Revealed:</div>
     <div id="clueList" class="clue-text-list"></div>
   </div>
-
   <div id="locFinal" class="loc-final"></div>
   <button class="reset-btn" onclick="resetStatus()">Reset Status</button>
-
   <div class="overlay-wrap" id="overlayAccess">
     <div class="overlay-content" id="accessText"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let overlayPersist = false; 
-    // Group clues (customize as desired!)
+    // Config
     const CLUES = [
       "Aft Section",      // Group 1
       "Starboard Side",   // Group 2
@@ -203,16 +112,76 @@
       "Compartment #17"   // Group 5
     ];
     const GROUP_LABELS = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
-
-    let previousColor = "", hourValue = localStorage.getItem("classHour") || "";
+    // List of tasks that reveal clues
+    const CLUE_TASKS = ["task2"]; // add future clue-bearing tasks here!
+    // Only show/track the most recent (max task) completed for the current hour.
+    let overlayPersist = false;
+    let previousColor = "";
+    let hourValue = localStorage.getItem("classHour") || "";
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
+
     let currentTask = "task1";
     let cluesShown = [];
 
+    // Robust overlay handler
+    function updateOverlay(show, html, persistForMs) {
+      const overlay = document.getElementById("overlayAccess");
+      const accessText = document.getElementById("accessText");
+      if (show) {
+        overlay.style.display = "flex";
+        accessText.innerHTML = html;
+        overlayPersist = true;
+        if (persistForMs > 0) {
+          setTimeout(() => {
+            overlay.style.display = "none";
+            overlayPersist = false;
+          }, persistForMs);
+        }
+      } else {
+        overlay.style.display = "none";
+        overlayPersist = false;
+      }
+    }
+
+    // Finds the highest completed task for this hour
+    async function findMostRecentTask() {
+      // Get all entries for current hour
+      const { data, error } = await client
+        .from('airlock_status')
+        .select('task,group,done')
+        .eq('hour', hourValue);
+
+      // Find tasks for which ALL groups are done
+      let completedTasks = {};
+      for (let i = 1; i <= 5; i++) {
+        (data || []).forEach(row => {
+          if (row.group === `group${i}` && row.done) {
+            completedTasks[row.task] = (completedTasks[row.task] || 0) + 1;
+          }
+        });
+      }
+      // Find max completed (taskN with 5 groups done)
+      let mostRecent = "task1";
+      let maxN = 1;
+      Object.keys(completedTasks).forEach(task => {
+        if (completedTasks[task] >= 5) {
+          let n = Number(task.replace("task", ""));
+          if (n > maxN) {
+            maxN = n;
+            mostRecent = task;
+          }
+        }
+      });
+      return mostRecent;
+    }
+
     async function showStatus() {
-      // Query group status for this hour/task
+      // Auto-select most recently finished task for this hour.
+      currentTask = await findMostRecentTask();
+
+      // Query group status for this hour/latest task ONLY
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done,task')
@@ -229,22 +198,18 @@
         if(groupData && groupData.done){
           el.classList.add('done');
           el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
-          // Reveal clue for this group only if currentTask is a clue-giving task
-          if(["task2","task3"].includes(currentTask)){
-            cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`);
-          }
+          if(CLUE_TASKS.includes(currentTask)){ cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`); }
           doneCount++;
         } else {
           el.innerHTML = GROUP_LABELS[i-1];
         }
       }
-      // -- CLUE PANEL logic --
+      // CLUE PANEL logic
       const cluePanel = document.getElementById("cluePanel");
       const clueList = document.getElementById("clueList");
       if (cluesShown.length > 0) {
         cluePanel.style.display = "block";
         clueList.innerHTML = cluesShown.join("<br>");
-        // Show assemble location when all 5 clues are revealed
         if (cluesShown.length === 5) {
           clueList.innerHTML += `<br><br><span style="font-size:1.17em; color:#43e6ef; font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
         }
@@ -253,7 +218,7 @@
         clueList.innerHTML = "";
       }
 
-      // Bar color and info
+      // Bar color/status
       const bar = document.getElementById("hourbar");
       let colorClass = "red";
       if (doneCount >= 5) colorClass = "green";
@@ -268,53 +233,35 @@
         previousColor = colorClass;
       }
 
-      // All done logic and overlays
+      // OVERLAY logic (only show once for the most recent task)
       const overlay = document.getElementById("overlayAccess");
-      const accessText = document.getElementById("accessText");
-      if (doneCount === 5) {
+      if (doneCount === 5 && !overlayPersist) {
         if(currentTask === "task1"){
-          overlay.style.display = "flex";
-          overlayPersist = true;
-          accessText.innerHTML = "Access Granted!<br>All security segments unlocked.<br><br>";
+          updateOverlay(
+            true,
+            "Access Granted!<br>All security segments unlocked.<br><br>",
+            10000
+          );
           setTimeout(() => {
-            overlay.style.display = "none";
-            overlayPersist = false;
-            switchToTask2();
-          }, 10000); // After overlay, go to next task
-        } else if(currentTask === "task2"){
-          overlay.style.display = "flex";
-          overlayPersist = true;
-          accessText.innerHTML = "<span style='font-size:1.14em;color:#f7fc7e;'>Damage Located!</span><br><br>";
-          for(let i=0; i < CLUES.length; i++){
-            accessText.innerHTML += `<span style="font-size:0.95em;color:#84ffc5;">${GROUP_LABELS[i]}: ${CLUES[i]}</span><br>`;
-          }
-          accessText.innerHTML += `<br><span style="font-size:1.1em;color:#56d1e7;font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
-          setTimeout(() => {
-            overlay.style.display = "none";
-            overlayPersist = false;
+            document.getElementById("mainTitle").innerHTML = "Outpost IX Damage Panel<br>Task 2";
           }, 10000);
-        }
-      } else {
-        if (!overlayPersist) {
-          overlay.style.display = "none";
+        } else if(CLUE_TASKS.includes(currentTask)){
+          let cluesHtml = "<span style='font-size:1.14em;color:#f7fc7e;'>Damage Located!</span><br><br>";
+          for(let i=0; i < CLUES.length; i++){
+            cluesHtml += `<span style="font-size:0.95em;color:#84ffc5;">${GROUP_LABELS[i]}: ${CLUES[i]}</span><br>`;
+          }
+          cluesHtml += `<br><span style="font-size:1.1em;color:#56d1e7;font-weight:bold;">LOCATION: ${CLUES.join(" – ")}</span>`;
+          updateOverlay(true, cluesHtml, 10000);
         }
       }
-    }
-
-    function switchToTask2(){
-      currentTask = "task2";
-      cluesShown = [];
-      document.getElementById("mainTitle").innerHTML = "Outpost IX Damage Panel<br>Task 2";
-      document.getElementById("hourbar").classList.remove("pulse", "green", "orange", "yellow", "red");
-      // Reset clue panel
-      document.getElementById("cluePanel").style.display = "none";
-      document.getElementById("clueList").innerHTML = "";
+      if (doneCount < 5 && !overlayPersist) {
+        updateOverlay(false);
+      }
     }
 
     setInterval(showStatus, 1500);
     showStatus();
 
-    // Pulse group segments every 5 seconds
     setInterval(() => {
       document.querySelectorAll('.segment.done').forEach(el => {
         el.classList.remove('pulse');
@@ -331,7 +278,7 @@
           .delete()
           .eq('hour', hourValue); // only clear for current hour!
         setTimeout(showStatus, 1000);
-        currentTask = "task1";
+        overlayPersist = false;
         document.getElementById("mainTitle").innerHTML = "Outpost IX Airlock<br>Status Panel";
         document.getElementById("cluePanel").style.display = "none";
         document.getElementById("clueList").innerHTML = "";
