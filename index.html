@@ -90,7 +90,7 @@
         <option value="7th">7th Hour</option>
       </select>
     </div>
-    <a href="airlock.html" class="biglink" id="task1link" onclick="setTaskAndGo('task1', this.href); return false;">Task 1 – Enter the Airlock</a>
+    <a href="task.html" class="biglink" id="task1link" onclick="setTaskAndGo('task1', this.href); return false;">Task 1 – Enter the Airlock</a>
     <div id="task2div"></div> <!-- Task 2 will be injected here -->
     <a href="status.html" class="biglink">Projector Status Panel</a>
   </div>
@@ -164,7 +164,7 @@
 
       if (allDone) {
         const link = document.createElement("a");
-        link.href = "compartment.html";
+        link.href = "task.html";
         link.className = "biglink";
         link.id = "task2link";
         link.textContent = "Task 2 – Find Damaged Compartment";
