@@ -21,16 +21,10 @@
 </head>
 <body>
   <div class="container">
-    <div class="heading">Group 5: Equation Builder</div>
+    <div class="heading"></div>
     <div class="overlay">
-      <div>
-        <strong>Clue:</strong> Type the equation of the line in <span class="math">y = mx + b</span> form for each pair of points. Use decimals or fractions where appropriate. No spaces, lowercase.
-      </div>
-      <ul>
-        <li>Points: (1, 2) &amp; (5, 6) &rarr; <input type="text" id="ans1" maxlength="14"></li>
-        <li>Points: (0, 3) &amp; (4, -1) &rarr; <input type="text" id="ans2" maxlength="14"></li>
-        <li>Points: (−2, 5) &amp; (6, 7) &rarr; <input type="text" id="ans3" maxlength="16"></li>
-      </ul>
+      <div class="clue"></div>
+      <ul></ul>
       <button id="unlockBtn">Unlock</button>
       <div class="feedback" id="feedback"></div>
     </div>
@@ -44,6 +38,47 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+    function clean(str) {
+      return str.replace(/\s/g,"").toLowerCase();
+    }
+
+    const TASKS = {
+      task1: {
+        heading: "Group 5: Equation Builder",
+        clue: 'Type the equation of the line in <span class="math">y = mx + b</span> form for each pair of points. Use decimals or fractions where appropriate. No spaces, lowercase.',
+        equations: [
+          { eq: "Points: (1, 2) &amp; (5, 6)", ans: ["y=x+1"] },
+          { eq: "Points: (0, 3) &amp; (4, -1)", ans: ["y=-x+3","y=-1x+3"] },
+          { eq: "Points: (−2, 5) &amp; (6, 7)", ans: ["y=0.25x+5.5", "y=1/4x+5.5", "y=1/4x+11/2"] }
+        ]
+      },
+      task2: {
+        heading: "Group 5: Y-Intercept Identifier",
+        clue: 'For each equation below, enter the coordinates of the y-intercept in the form <span class="math">(0,b)</span>. Decimals or fractions allowed. No spaces.',
+        equations: [
+          { eq: "y = -2x + 7", ans: ["(0,7)"] },
+          { eq: "3y - 6x = 9", ans: ["(0,3)"] }, // 3y=6x+9 → y=2x+3
+          { eq: "y + 4 = 1/2x", ans: ["(0,-4)"] }, // y=1/2x-4
+          { eq: "2y = 12x - 6", ans: ["(0,-3)"] }, // 2y=12x-6 → y=6x-3
+          { eq: "y = (3/4)x + 2", ans: ["(0,2)"] }
+        ]
+      }
+    };
+
+    function renderTaskContent() {
+      const task = TASKS[taskId] || TASKS["task1"];
+      document.querySelector('.heading').textContent = task.heading;
+      document.querySelector('.clue').innerHTML = "<strong>Clue:</strong> " + task.clue;
+
+      const ul = document.querySelector('ul');
+      ul.innerHTML = "";
+      task.equations.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="math">${e.eq}</span> &rarr; <input type="text" id="ans${i+1}" maxlength="21">`;
+        ul.appendChild(li);
+      });
+    }
+
     async function checkCompleted() {
       try {
         let { data, error } = await client
@@ -55,8 +90,10 @@
           .maybeSingle();
         if (data && data.done) {
           document.getElementById("feedback").textContent = "Already unlocked! Return to the Control Panel.";
+          document.getElementById("unlockBtn").disabled = true;
         } else {
           document.getElementById("feedback").textContent = "";
+          document.getElementById("unlockBtn").disabled = false;
         }
         if (error && error.code !== "PGRST116") {
           document.getElementById("feedback").textContent = "Supabase error (on load): " + error.message;
@@ -67,23 +104,23 @@
         console.error("JS Error (on load):", err);
       }
     }
-    window.addEventListener('DOMContentLoaded', checkCompleted);
+
+    window.addEventListener('DOMContentLoaded', function() {
+      renderTaskContent();
+      checkCompleted();
+    });
 
     document.getElementById("unlockBtn").onclick = async function() {
-      function clean(str) {
-        return str.replace(/\s/g,"").toLowerCase();
-      }
-      var a1 = clean(document.getElementById("ans1").value);
-      var a2 = clean(document.getElementById("ans2").value);
-      var a3 = clean(document.getElementById("ans3").value);
+      const task = TASKS[taskId] || TASKS["task1"];
+      let correct = true;
+      task.equations.forEach((e, i) => {
+        const input = clean(document.getElementById("ans"+(i+1)).value);
+        if (!e.ans.map(x=>clean(x)).includes(input)) correct = false;
+      });
 
-      // Accept decimal and fraction forms for a3, -x and -1x for a2
-      const ok_a1 = a1 === "y=x+1";
-      const ok_a2 = (a2 === "y=-x+3" || a2 === "y=-1x+3");
-      const ok_a3 = (a3 === "y=0.25x+5.5" || a3 === "y=1/4x+5 1/2" || a3 === "y=1/4x+11/2");
-
-      if (ok_a1 && ok_a2 && ok_a3) {
+      if (correct) {
         document.getElementById("feedback").textContent = "Correct! Segment unlocked. Return to the Control Panel.";
+        document.getElementById("unlockBtn").disabled = true;
         try {
           const { error, data } = await client
             .from('airlock_status')
@@ -101,7 +138,7 @@
       } else {
         document.getElementById("feedback").textContent = "Try again.";
       }
-    }
+    };
   </script>
 </body>
 </html>
