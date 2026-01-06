@@ -18,6 +18,7 @@
       border-radius: 11px;
       padding: 28px 34px 34px 34px;
       box-shadow: 0 0 16px #222;
+      text-align: left; /* LEFT align main content for readability */
     }
     h1 {
       font-size: 2.6em;
@@ -43,7 +44,7 @@
       font-size: 1.15em;
       padding: 16px;
       margin: 0 0 18px 0;
-      text-align: center;
+      text-align: left;
       text-decoration: none;
       transition: background 0.2s;
       font-weight: bold;
@@ -90,9 +91,12 @@
         <option value="7th">7th Hour</option>
       </select>
     </div>
+    <!-- Task 1: Always present -->
     <a href="task.html" class="biglink" id="task1link" onclick="setTaskAndGo('task1', this.href); return false;">Task 1 – Enter the Airlock</a>
-    <div id="task2div"></div> <!-- Task 2 will be injected here -->
-    <a href="status.html" class="biglink">Projector Status Panel</a>
+    <!-- Task 2 and Task 3 will be injected -->
+    <div id="task2div"></div>
+    <div id="task3div"></div>
+    <a href="status.html" class="biglink" style="margin-top:28px;">Projector Status Panel</a>
   </div>
   <script>
     // Hour selection setup
@@ -102,9 +106,7 @@
     });
     window.addEventListener("DOMContentLoaded", function() {
       const storedHour = localStorage.getItem("classHour");
-      if (storedHour) {
-        hourSelect.value = storedHour;
-      }
+      if (storedHour) hourSelect.value = storedHour;
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -112,82 +114,82 @@
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
-    const taskId = localStorage.getItem('currentTask') || 'task1';
 
-    async function checkTask1Complete() {
+    async function checkTaskCompletion() {
       const hourValue = localStorage.getItem("classHour") || "";
-      if (!hourValue) {
-        // No hour selected, clear Task 1 completion and Task 2 link
-        const task1 = document.getElementById("task1link");
-        task1.classList.remove("completed");
-        const prevCheck = task1.querySelector(".checkmark");
-        if (prevCheck) task1.removeChild(prevCheck);
+      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
 
-          const task2div = document.getElementById("task2div");
-          task2div.innerHTML = "";
-        return; // exit early
-      }
-      const { data, error } = await client
+      // Clear injected task links every check
+      document.getElementById("task2div").innerHTML = "";
+      document.getElementById("task3div").innerHTML = "";
+
+      // Check Task 1 completion for all groups
+      const { data: data1 } = await client
         .from('airlock_status')
         .select('group,done')
-        .eq('hour', hourValue);
-
-      if (error) {
-        console.error('Supabase error:', error);
-        return;
-      }
-      const expectedGroups = ["group1", "group2", "group3", "group4", "group5"];
-      const allDone = expectedGroups.every(grp =>
-        data.find(d => d.group === grp && d.done)
+        .eq('hour', hourValue)
+        .eq('task', 'task1');
+      const allDone1 = expectedGroups.every(grp =>
+        data1?.find(d => d.group === grp && d.done)
       );
 
-      // Task 1 dynamic color/check
+      // Mark Task 1 as complete
       const task1 = document.getElementById("task1link");
       const prevCheck = task1.querySelector(".checkmark");
       if (prevCheck) task1.removeChild(prevCheck);
-
-      if (allDone) {
+      if (allDone1) {
         task1.classList.add("completed");
         const check = document.createElement("span");
         check.className = "checkmark";
         check.textContent = "✓";
         task1.appendChild(check);
+
+        // Inject Task 2 link when Task 1 is done
+        const link2 = document.createElement("a");
+        link2.href = "task.html";
+        link2.className = "biglink";
+        link2.id = "task2link";
+        link2.textContent = "Task 2 – Find Damaged Compartment";
+        link2.onclick = function(e) {
+          localStorage.setItem('currentTask', 'task2');
+          window.location.href = this.href;
+          return false;
+        };
+        document.getElementById("task2div").appendChild(link2);
+
+        // Check Task 2 for all groups
+        const { data: data2 } = await client
+          .from('airlock_status')
+          .select('group,done')
+          .eq('hour', hourValue)
+          .eq('task', 'task2');
+        const allDone2 = expectedGroups.every(grp =>
+          data2?.find(d => d.group === grp && d.done)
+        );
+        if (allDone2) {
+          const link3 = document.createElement("a");
+          link3.href = "task.html";
+          link3.className = "biglink";
+          link3.id = "task3link";
+          link3.textContent = "Task 3 – Repair Module Sequencing";
+          link3.onclick = function(e) {
+            localStorage.setItem('currentTask', 'task3');
+            window.location.href = this.href;
+            return false;
+          };
+          document.getElementById("task3div").appendChild(link3);
+        }
       } else {
         task1.classList.remove("completed");
       }
-
-      // Task 2 dynamic show/hide
-      const task2div = document.getElementById("task2div");
-
-      task2div.innerHTML = ""; // clear previous content
-
-
-      if (allDone) {
-        const link = document.createElement("a");
-        link.href = "task.html";
-        link.className = "biglink";
-        link.id = "task2link";
-        link.textContent = "Task 2 – Find Damaged Compartment";
-
-        // When clicked, set currentTask, then navigate
-        link.onclick = function (e) {
-          localStorage.setItem('currentTask', 'task2');
-          window.location.href = this.href;
-          return false; // Prevent default link handling
-        };
-
-        task2div.appendChild(link);
-      }
     }
-    window.addEventListener('DOMContentLoaded', checkTask1Complete);
-    setInterval(checkTask1Complete, 2000);
-  </script>
-  <script>
-  function setTaskAndGo(taskId, href) {
-    localStorage.setItem('currentTask', taskId);
-    window.location.href = href;
-  }
-  </script>
+    window.addEventListener('DOMContentLoaded', checkTaskCompletion);
+    setInterval(checkTaskCompletion, 2000);
 
+    function setTaskAndGo(taskId, href) {
+      localStorage.setItem('currentTask', taskId);
+      window.location.href = href;
+    }
+  </script>
 </body>
 </html>
