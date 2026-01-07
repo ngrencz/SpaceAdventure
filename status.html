@@ -16,7 +16,6 @@
     .hourbar.orange { background: #cc7000; color: #fff2e6; box-shadow: 0 0 36px #ffb54a, 0 0 12px #7a3c00;}
     .hourbar.yellow { background: #ffe035; color: #2a2a2a; box-shadow: 0 0 32px #fff57a, 0 0 10px #d2ba0a;}
     .hourbar.green { background: #23d75a; color: #fff; box-shadow: 0 0 44px #33ff99, 0 0 14px #16a064;}
-    .hourbar.blue { background: #225daf; color: #fffbea; box-shadow: 0 0 44px #448cff, 0 0 14px #163393;}
     .hourbar.pulse { animation: pulsebar 1.4s 2;}
     @keyframes pulsebar { 0%{} 20%{box-shadow:0 0 38px #fd4a4a,0 0 18px #660f19;} 40%{box-shadow:0 0 52px #ffb54a,0 0 22px #7a3c00;} 60%{box-shadow:0 0 56px #fff57a,0 0 16px #e2df45;} 80%{box-shadow:0 0 48px #33ff99,0 0 20px #16a064;} 100%{} }
     .status-panel { display: flex; justify-content: center; gap: 34px; margin-top: 18px; margin-bottom:18px;}
@@ -27,7 +26,6 @@
       position: relative;
     }
     .segment.done { background: #33da92; color: #f7fff8; border: 3px solid #7afdff; box-shadow: 0 0 50px #13ffa0, 0 0 14px #23d75a;}
-    .segment.repair { background: #225daf; color: #eaf5ff; border: 3px solid #7caefd; box-shadow: 0 0 48px #448cff, 0 0 13px #225daf;}
     .segment.done.pulse { animation: pulse 1s 2;}
     @keyframes pulse {
       0%{box-shadow:0 0 50px #13ffa080;}
@@ -124,31 +122,19 @@
       "Compartments #17–48" // Group 5
     ];
     const GROUP_LABELS = [
-      "Group 1",
-      "Group 2",
-      "Group 3",
-      "Group 4",
-      "Group 5"
+      "Group 1", "Group 2", "Group 3", "Group 4", "Group 5"
     ];
-
-    // Type switching
     const CLUE_TASKS = ["task2"];
     const HULL_TASKS = ["task3"];
-    let overlayPersist = false;
-    let lastOverlayTaskHour = null;
-    let lastOverlayTaskShown = null;
-    let previousColor = "";
+    let overlayPersist = false, lastOverlayTaskHour = null, lastOverlayTaskShown = null, previousColor = "";
     let hourValue = localStorage.getItem("classHour") || "";
-    let currentTask = localStorage.getItem("currentTask") || "task1"; // Use localStorage!
-
+    let currentTask = localStorage.getItem("currentTask") || "task1";
     const supabaseUrl = 'https://khazeoycsjdqnmwodncw.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoYXplb3ljc2pkcW5td29kbmN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5MDMwOTMsImV4cCI6MjA3ODQ3OTA5M30.h-WabaGcQZ968sO2ImetccUaRihRFmO2mUKCdPiAbEI';
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let cluesShown = [];
-    let hullShown = [];
+    let cluesShown = [], hullShown = [];
 
-    // Robust overlay handler (unchanged)
     function updateOverlay(show, html, persistForMs) {
       const overlay = document.getElementById("overlayAccess");
       const accessText = document.getElementById("accessText");
@@ -169,9 +155,7 @@
     }
 
     async function showStatus() {
-      // re-read the currentTask in case it changes
       currentTask = localStorage.getItem("currentTask") || "task1";
-      // Query only for the locally-selected task
       const { data, error } = await client
         .from('airlock_status')
         .select('group,done,task')
@@ -184,21 +168,19 @@
       for (let i = 1; i <= 5; i++) {
         const el = document.getElementById("stat" + i);
         const groupName = "group" + i;
-        el.classList.remove('done', 'pulse', 'repair');
+        el.classList.remove('done', 'pulse');
+        // Only show "Group N" and ✓ if done—remove all extra info
         let groupData = data?.find(d => d.group === groupName);
         if(groupData && groupData.done){
           doneCount++;
+          el.classList.add('done');
+          el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
+          // Collect info for the panels below ONLY
           if (HULL_TASKS.includes(currentTask)) {
-            el.classList.add('done', 'repair');
-            el.innerHTML = `${GROUP_LABELS[i-1]}<br>✓<br><span style="font-size:0.93em;color:#b5f7ff;">${REPAIR_ZONES[i-1]}</span>`;
             hullShown.push(`<strong>${GROUP_LABELS[i-1]}:</strong> ${REPAIR_ZONES[i-1]} <span style="color:#83daff;">- Repaired</span>`);
           }
-          else {
-            el.classList.add('done');
-            el.innerHTML = GROUP_LABELS[i-1] + "<br>✓";
-            if(CLUE_TASKS.includes(currentTask)){
-              cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`);
-            }
+          if(CLUE_TASKS.includes(currentTask)){
+            cluesShown.push(`${GROUP_LABELS[i-1]}: ${CLUES[i-1]}`);
           }
         } else {
           el.innerHTML = GROUP_LABELS[i-1];
@@ -239,29 +221,28 @@
         }
       }
 
-      // Bar color/status logic
+      // Bar color/status logic - same for all tasks now!
       const bar = document.getElementById("hourbar");
-        let colorClass = "red";
-        if (doneCount === 5) colorClass = "green";
-        else if (doneCount >= 3) colorClass = "yellow";
-        else if (doneCount >= 1) colorClass = "orange";
-        bar.className = `hourbar ${colorClass}`;
+      let colorClass = "red";
+      if (doneCount === 5) colorClass = "green";
+      else if (doneCount >= 3) colorClass = "yellow";
+      else if (doneCount >= 1) colorClass = "orange";
+      bar.className = `hourbar ${colorClass}`;
 
-        if (HULL_TASKS.includes(currentTask)) {
-          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(Hull Repair: ${doneCount}/5 complete)</span>`;
-        } else if (CLUE_TASKS.includes(currentTask)) {
-          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
-        } else {
-          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
-        }
+      if (HULL_TASKS.includes(currentTask)) {
+        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(Hull Repair: ${doneCount}/5 complete)</span>`;
+      } else if (CLUE_TASKS.includes(currentTask)) {
+        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+      } else {
+        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+      }
 
-        if (previousColor !== colorClass) {
-          bar.classList.add("pulse");
-          setTimeout(() => bar.classList.remove("pulse"), 2800);
-          previousColor = colorClass;
-        }
+      if (previousColor !== colorClass) {
+        bar.classList.add("pulse");
+        setTimeout(() => bar.classList.remove("pulse"), 2800);
+        previousColor = colorClass;
+      }
 
-      // OVERLAY logic: only show ONCE per completed task per hour
       if (doneCount === 5 && !overlayPersist && (lastOverlayTaskHour !== hourValue || lastOverlayTaskShown !== currentTask)) {
         overlayPersist = true;
         lastOverlayTaskHour = hourValue;
