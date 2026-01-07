@@ -241,23 +241,25 @@
 
       // Bar color/status logic
       const bar = document.getElementById("hourbar");
-      let colorClass = "red";
-      if (HULL_TASKS.includes(currentTask)) colorClass = "blue";
-      else if (doneCount >= 5 && CLUE_TASKS.includes(currentTask)) colorClass = "green";
-      else if (doneCount >= 3) colorClass = "yellow";
-      else if (doneCount >= 1) colorClass = "orange";
+        let colorClass = "red";
+        if (doneCount === 5) colorClass = "green";
+        else if (doneCount >= 3) colorClass = "yellow";
+        else if (doneCount >= 1) colorClass = "orange";
+        bar.className = `hourbar ${colorClass}`;
 
-      bar.className = `hourbar ${colorClass}`;
-      if (HULL_TASKS.includes(currentTask)) {
-        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(Hull Repair: ${doneCount}/5 complete)</span>`;
-      } else {
-        bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
-      }
-      if (previousColor !== colorClass) {
-        bar.classList.add("pulse");
-        setTimeout(() => bar.classList.remove("pulse"), 2800);
-        previousColor = colorClass;
-      }
+        if (HULL_TASKS.includes(currentTask)) {
+          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(Hull Repair: ${doneCount}/5 complete)</span>`;
+        } else if (CLUE_TASKS.includes(currentTask)) {
+          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+        } else {
+          bar.innerHTML = `Hour: ${hourValue ? hourValue : "(none selected)"} <span style="font-weight:normal;font-size:0.98em;margin-left:12px;">(${doneCount}/5 groups complete)</span>`;
+        }
+
+        if (previousColor !== colorClass) {
+          bar.classList.add("pulse");
+          setTimeout(() => bar.classList.remove("pulse"), 2800);
+          previousColor = colorClass;
+        }
 
       // OVERLAY logic: only show ONCE per completed task per hour
       if (doneCount === 5 && !overlayPersist && (lastOverlayTaskHour !== hourValue || lastOverlayTaskShown !== currentTask)) {
