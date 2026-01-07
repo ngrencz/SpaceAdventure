@@ -11,6 +11,20 @@
       background-position: center center;
       background-repeat: no-repeat;
       background-attachment: fixed;
+      color: #d6e1ff;
+      font-family: 'Orbitron', Arial, sans-serif;
+      margin: 0;
+      position: relative;
+    }
+
+    /* The actual dark overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(20, 20, 32, 0.6); /* <--- 0.6 opacity, adjust for lighter/darker */
+      z-index: 0;
     }
     .container {
       max-width: 780px;
