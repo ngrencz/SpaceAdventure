@@ -301,6 +301,7 @@
           .from('airlock_status')
           .delete()
           .eq('hour', hourValue);
+        localStorage.removeItem("currentTask");
         setTimeout(showStatus, 1000);
         overlayPersist = false;
         lastOverlayTaskHour = null;
