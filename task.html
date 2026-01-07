@@ -8,6 +8,15 @@
     body { background: #0e1834; color: #cbe7ff; font-family: 'Orbitron', Arial, sans-serif; margin: 0;}
     .container { max-width:680px; margin:56px auto 0 auto; background:#203266dd; border-radius:14px; padding:38px 38px 48px 38px; box-shadow:0 0 22px #273b83; }
     h1 { color: #7fc6ff; font-size:2.25em; margin-bottom:16px;}
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(20, 20, 32, 0.3); /* or tweak opacity */
+      z-index: 0;
+    }
+.container { position: relative; z-index: 1; }
     .story { color:#b4ffe8; font-size:1.18em; margin-bottom:24px;}
     .instructions { color:#50ee9e; font-size:1.12em; margin-bottom: 26px;}
     .links { margin-top: 12px; }
@@ -33,6 +42,11 @@
   <script>
     // Get currentTask from localStorage (safe default to 'task1')
     const taskId = localStorage.getItem('currentTask') || 'task1';
+    const TASK_BACKGROUNDS = {
+      task1: "url('img/Airlock.jpg')",               // Airlock for Task 1
+      task2: "url('img/ControlPanelA.jpg')",        // Control panel for Task 2
+      task3: "url('img/ControlPanelB.jpg')"         // Different panel for Task 3
+    };
 
     // Per-task content definitions
     const TASKS = {
@@ -101,7 +115,11 @@
     document.getElementById('taskTitle').textContent = task.title;
     document.getElementById('taskStory').innerHTML = task.story;
     document.getElementById('taskInst').textContent = task.instructions;
-
+    document.body.style.backgroundImage = TASK_BACKGROUNDS[taskId] || "";
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center center";
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.backgroundAttachment = "fixed";
     // Group links
     const linksDiv = document.getElementById('groupLinks');
     task.groupLinks.forEach(link => {
