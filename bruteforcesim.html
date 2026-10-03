@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware Brute Force Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #050505;
+            color: #39ff14;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at center, rgba(57, 255, 20, 0.05) 0%, transparent 60%),
+                linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.6), 0 0 20px rgba(57, 255, 20, 0.2);
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #39ff14;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.1), inset 0 0 10px rgba(57, 255, 20, 0.05);
+        }
+
+        .pin-display {
+            font-size: 5rem;
+            letter-spacing: 0.5rem;
+            line-height: 1;
+            font-weight: bold;
+        }
+
+        @media (min-width: 768px) {
+            .pin-display {
+                font-size: 8rem;
+                letter-spacing: 1rem;
+            }
+        }
+
+        .hw-btn {
+            background: transparent;
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            color: #39ff14;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hw-btn:hover {
+            background: rgba(57, 255, 20, 0.15);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+            border-color: #39ff14;
+        }
+
+        .hw-btn:active {
+            background: #39ff14;
+            color: #000;
+        }
+
+        .hw-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(57, 255, 20, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .hw-btn:hover::before {
+            left: 100%;
+        }
+
+        .terminal-output {
+            height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #39ff14 #000;
+        }
+        
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        .terminal-output::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.5); 
+        }
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #39ff14; 
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100vh;
+            z-index: 50;
+            position: fixed;
+            top: 0; left: 0;
+            pointer-events: none;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(57,255,20,0.05) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.6;
+            animation: scanline 6s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        @keyframes flash-success {
+            0%, 100% { color: #39ff14; text-shadow: 0 0 8px rgba(57, 255, 20, 0.6); }
+            10%, 30%, 50% { color: #fff; text-shadow: 0 0 30px #fff; }
+            20%, 40% { color: #39ff14; }
+        }
+
+        .success-flash {
+            animation: flash-success 1.5s ease-out;
+        }
+
+        .blinking-cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+            margin-left: 4px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 relative flex flex-col items-center">
+
+    <div class="scanline"></div>
+
+    <div class="w-full max-w-5xl z-10 space-y-6">
+        
+        <header class="text-center mb-8 border-b border-[#39ff14]/30 pb-4">
+            <h1 class="text-3xl md:text-4xl font-bold glow-text uppercase tracking-widest">Processing Speed Matrix</h1>
+            <p class="text-sm opacity-70 mt-2">BRUTE FORCE SIMULATION // TARGET PIN SET</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Display Panel -->
+            <div class="panel p-6 flex flex-col items-center justify-center relative min-h-[250px]">
+                <div class="absolute top-4 left-4 text-xs opacity-50 uppercase">Target PIN: [ENCRYPTED]</div>
+                <div id="access-status" class="absolute top-4 right-4 text-xs uppercase font-bold text-red-500">LOCKED</div>
+                
+                <div id="pin-display" class="pin-display glow-text text-center w-full mt-4">
+                    0000
+                </div>
+                
+                <div id="progress-bar-container" class="w-full h-1 bg-[#39ff14]/20 mt-8 hidden">
+                    <div id="progress-bar" class="h-full bg-[#39ff14] w-0 transition-all duration-75"></div>
+                </div>
+            </div>
+
+            <!-- Terminal Panel -->
+            <div class="panel p-4 flex flex-col">
+                <div class="border-b border-[#39ff14]/30 pb-2 mb-2 text-sm uppercase flex justify-between">
+                    <span>System Terminal</span>
+                    <span class="opacity-50">root@sys:~#</span>
+                </div>
+                <div id="terminal" class="terminal-output flex-grow text-sm md:text-base space-y-1 font-mono">
+                    <div class="opacity-70">> SYSTEM ONLINE.</div>
+                    <div class="opacity-70">> WAITING FOR HARDWARE SELECTION...</div>
+                </div>
+                <div class="mt-2 text-sm blinking-cursor">> </div>
+            </div>
+        </div>
+
+        <div class="panel p-6 mt-6">
+            <h2 class="text-xl uppercase mb-4 border-b border-[#39ff14]/30 pb-2 glow-text">Select Hardware Profile</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="startSimulation('eniac')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">ENIAC</span>
+                    <span class="text-xs opacity-70">1945 // 500 ops/s</span>
+                </button>
+                <button onclick="startSimulation('tradic')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">TRADIC</span>
+                    <span class="text-xs opacity-70">1954 // 5,000 ops/s</span>
+                </button>
+                <button onclick="startSimulation('pdp1')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">DEC PDP-1</span>
+                    <span class="text-xs opacity-70">1959 // 10,000 ops/s</span>
+                </button>
+                <button onclick="startSimulation('agc')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">Apollo AGC</span>
+                    <span class="text-xs opacity-70">1966 // 8,500 ops/s</span>
+                </button>
+                <button onclick="startSimulation('school')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">Workstation</span>
+                    <span class="text-xs opacity-70">2021 // 5B ops/s</span>
+                </button>
+                <button onclick="startSimulation('gaming')" class="hw-btn py-3 px-4 rounded text-left flex flex-col border-[#39ff14]">
+                    <span class="font-bold">Gaming PC</span>
+                    <span class="text-xs opacity-70">Modern // 10T ops/s</span>
+                </button>
+                <button onclick="startSimulation('super')" class="hw-btn py-3 px-4 rounded text-left flex flex-col">
+                    <span class="font-bold">Supercomputer</span>
+                    <span class="text-xs opacity-70">Exascale // 100Q ops/s</span>
+                </button>
+                <button onclick="startSimulation('quantum')" class="hw-btn py-3 px-4 rounded text-left flex flex-col border-purple-500 text-purple-400 hover:border-purple-400 hover:text-purple-300 hover:bg-purple-900/20">
+                    <span class="font-bold">Quantum Future</span>
+                    <span class="text-xs opacity-70">Grover's Alg // Instant</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TARGET_PIN = 8388;
+        let isRunning = false;
+        let animationFrameId = null;
+
+        // DOM Elements
+        const displayEl = document.getElementById('pin-display');
+        const terminalEl = document.getElementById('terminal');
+        const statusEl = document.getElementById('access-status');
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Hardware Profiles Matrix
+        const profiles = {
+            eniac: { 
+                name: "ENIAC (1945)", 
+                speed: 500, // checks per second
+                instant: false 
+            },
+            tradic: { 
+                name: "TRADIC (1954)", 
+                speed: 5000, 
+                instant: false 
+            },
+            pdp1: { 
+                name: "DEC PDP-1 (1959)", 
+                speed: 10000, 
+                instant: false 
+            },
+            agc: { 
+                name: "Apollo Guidance Computer (1966)", 
+                speed: 8500, 
+                instant: false 
+            },
+            school: { 
+                name: "School Workstation (2021)", 
+                speed: 5000000000, // 5 Billion
+                instant: true, 
+                timeStr: "1.67 microseconds" 
+            },
+            gaming: { 
+                name: "Gaming PC (Modern)", 
+                speed: 10000000000000, // 10 Trillion
+                instant: true, 
+                timeStr: "0.83 nanoseconds" 
+            },
+            super: { 
+                name: "Exascale Supercomputer", 
+                speed: 100000000000000000, // 100 Quadrillion
+                instant: true, 
+                timeStr: "0.00008 nanoseconds" 
+            },
+            quantum: { 
+                name: "Quantum Future System", 
+                speed: Infinity, 
+                instant: true, 
+                timeStr: "0.00000 nanoseconds (Simultaneous Parallel Execution)" 
+            }
+        };
+
+        function logMsg(msg, isHighlight = false, isError = false) {
+            const div = document.createElement('div');
+            
+            // Format timestamp
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+            
+            div.innerHTML = `<span class="opacity-50">[${timeStr}]</span> > ${msg}`;
+            
+            if (isHighlight) div.className = "text-[#fff] font-bold drop-shadow-[0_0_5px_rgba(57,255,20,0.8)]";
+            else if (isError) div.className = "text-red-500";
+            else div.className = "opacity-90";
+
+            terminalEl.appendChild(div);
+            
+            // Auto-scroll to bottom
+            terminalEl.scrollTop = terminalEl.scrollHeight;
+        }
+
+        function resetUI() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            displayEl.classList.remove('success-flash');
+            displayEl.textContent = "0000";
+            statusEl.textContent = "LOCKED";
+            statusEl.className = "absolute top-4 right-4 text-xs uppercase font-bold text-red-500";
+            progressBarContainer.classList.remove('hidden');
+            progressBar.style.width = "0%";
+            
+            // Force reflow for animation reset
+            void displayEl.offsetWidth;
+        }
+
+        function triggerSuccess(hardware, exactTimeStr) {
+            displayEl.textContent = TARGET_PIN.toString().padStart(4, '0');
+            displayEl.classList.add('success-flash');
+            
+            statusEl.textContent = "ACCESS GRANTED";
+            statusEl.className = "absolute top-4 right-4 text-xs uppercase font-bold text-[#39ff14] drop-shadow-[0_0_8px_rgba(57,255,20,1)]";
+            
+            progressBar.style.width = "100%";
+            setTimeout(() => { progressBarContainer.classList.add('hidden'); }, 1000);
+
+            logMsg(`CRACK SUCCESSFUL. PIN: ${TARGET_PIN}`);
+            logMsg(`TIME ELAPSED: ${exactTimeStr}`, true);
+            logMsg("--------------------------------------------------", false);
+            isRunning = false;
+        }
+
+        function startSimulation(hwId) {
+            if (isRunning) return; // Prevent double-clicks
+            
+            const hw = profiles[hwId];
+            if (!hw) return;
+
+            resetUI();
+            isRunning = true;
+            
+            logMsg(`INITIALIZING BRUTE FORCE PROTOCOL...`);
+            logMsg(`HARDWARE SELECTED: ${hw.name}`);
+            if (!hw.instant) {
+                logMsg(`PROCESSING SPEED: ${hw.speed.toLocaleString()} checks/sec`);
+            } else {
+                logMsg(`PROCESSING SPEED: OVERWHELMING`);
+            }
+
+            if (hw.instant) {
+                // For modern/future hardware, it's physically impossible to animate
+                // because it finishes in under 1 frame (16ms).
+                setTimeout(() => {
+                    triggerSuccess(hw, hw.timeStr);
+                }, 400); // Tiny artificial delay just so the user sees the start log
+            } else {
+                // Animate historically slow hardware
+                const startTime = performance.now();
+                
+                function runFrame(currentTime) {
+                    const elapsedMs = currentTime - startTime;
+                    const elapsedSeconds = elapsedMs / 1000;
+                    
+                    // Calculate how many checks would have happened in this elapsed time
+                    let currentGuess = Math.floor(elapsedSeconds * hw.speed);
+
+                    if (currentGuess >= TARGET_PIN) {
+                        // Finished!
+                        const exactSeconds = (TARGET_PIN / hw.speed).toFixed(3);
+                        triggerSuccess(hw, `${exactSeconds} seconds`);
+                    } else {
+                        // Update UI
+                        displayEl.textContent = currentGuess.toString().padStart(4, '0');
+                        progressBar.style.width = `${(currentGuess / TARGET_PIN) * 100}%`;
+                        
+                        // Request next frame
+                        animationFrameId = requestAnimationFrame(runFrame);
+                    }
+                }
+                
+                // Start the loop
+                animationFrameId = requestAnimationFrame(runFrame);
+            }
+        }
+    </script>
+</body>
+</html>
