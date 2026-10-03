@@ -38,8 +38,8 @@
         }
 
         .pwd-display {
-            font-size: 2.5rem;
-            letter-spacing: 0.3rem;
+            font-size: 2.2rem;
+            letter-spacing: 0.2rem;
             line-height: 1;
             font-weight: bold;
             word-break: break-all;
@@ -47,8 +47,8 @@
 
         @media (min-width: 768px) {
             .pwd-display {
-                font-size: 4rem;
-                letter-spacing: 0.8rem;
+                font-size: 3.5rem;
+                letter-spacing: 0.5rem;
             }
         }
 
@@ -137,7 +137,7 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8 relative flex flex-col items-center">
+<body class="p-4 md:p-6 relative flex flex-col items-center">
 
     <div class="scanline"></div>
 
@@ -148,7 +148,7 @@
             <p id="system-info" class="text-sm opacity-70 mt-2">BASE-62 SEQUENTIAL ATTACK [A-Z, a-z, 0-9] // TRUE MATHEMATICAL PROGRESSION</p>
         </header>
 
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-4">
             <button id="btn-security" onclick="toggleSecurity()" class="hw-btn py-2 px-6 rounded text-sm uppercase tracking-wider font-bold">
                 SECURITY: 8-CHAR (STANDARD)
             </button>
@@ -167,12 +167,14 @@
                     --------
                 </div>
                 
-                <!-- ETA and Progress Data -->
                 <div class="w-full mt-10 flex flex-col items-center space-y-3">
                     <div class="text-sm uppercase tracking-widest text-center" id="eta-display">
                         SYSTEM IDLE
                     </div>
-                    <div class="text-xs opacity-50 uppercase text-center font-mono" id="combinations-display">
+                    <div class="text-xs opacity-50 uppercase text-center font-mono" id="time-elapsed-display">
+                        ELAPSED: 0.00s
+                    </div>
+                    <div class="text-xs opacity-50 uppercase text-center font-mono mt-1" id="combinations-display">
                         0 / 0 ATTEMPTS
                     </div>
                     <div id="progress-bar-container" class="w-full h-2 bg-[#39ff14]/20 hidden rounded overflow-hidden mt-2">
@@ -197,50 +199,57 @@
             </div>
         </div>
 
-        <div class="panel p-6 mt-6">
+        <div class="panel p-6 mt-2">
             <h2 class="text-xl uppercase mb-4 border-b border-[#39ff14]/30 pb-2 glow-text">Select Compute Cluster</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <button onclick="startSimulation('eniac')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col">
-                    <span class="font-bold text-sm">ENIAC</span>
-                    <span class="text-xs opacity-70">1945 // 5,000 /s</span>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                <button onclick="startSimulation('eniac')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col">
+                    <span class="font-bold text-sm">1. ENIAC</span>
+                    <span class="text-xs opacity-70">100 /s</span>
                 </button>
-                <button onclick="startSimulation('tradic')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col">
-                    <span class="font-bold text-sm">TRADIC</span>
-                    <span class="text-xs opacity-70">1954 // 1 Million /s</span>
+                <button onclick="startSimulation('tradic')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col">
+                    <span class="font-bold text-sm">2. TRADIC</span>
+                    <span class="text-xs opacity-70">1,000 /s</span>
                 </button>
-                <button onclick="startSimulation('pdp1')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col">
-                    <span class="font-bold text-sm">DEC PDP-1</span>
-                    <span class="text-xs opacity-70">1959 // 100,000 /s</span>
+                <button onclick="startSimulation('pdp1')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col">
+                    <span class="font-bold text-sm">3. DEC PDP-1</span>
+                    <span class="text-xs opacity-70">10,000 /s</span>
                 </button>
-                <button onclick="startSimulation('agc')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col">
-                    <span class="font-bold text-sm">Apollo AGC</span>
-                    <span class="text-xs opacity-70">1966 // 85,000 /s</span>
+                <button onclick="startSimulation('agc')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col">
+                    <span class="font-bold text-sm">4. Apollo AGC</span>
+                    <span class="text-xs opacity-70">50,000 /s</span>
                 </button>
-                <button onclick="startSimulation('school')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col">
-                    <span class="font-bold text-sm">School PC</span>
-                    <span class="text-xs opacity-70">~2019 // 500 Million /s</span>
+                <button onclick="startSimulation('school')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col">
+                    <span class="font-bold text-sm">5. School PC</span>
+                    <span class="text-xs opacity-70">50 Million /s</span>
                 </button>
-                
-                <button onclick="startSimulation('iphone')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col border-[#39ff14]/50">
-                    <span class="font-bold text-sm">Modern iPhone</span>
-                    <span class="text-xs opacity-70">A17 Pro // 5 Billion /s</span>
-                </button>
-                <button onclick="startSimulation('xbox')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col border-[#39ff14]/60">
-                    <span class="font-bold text-sm">Xbox Series X</span>
-                    <span class="text-xs opacity-70">AMD Zen 2 // 20 Billion /s</span>
-                </button>
-                <button onclick="startSimulation('gaming')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col border-[#39ff14]">
-                    <span class="font-bold text-sm">Gaming PC</span>
-                    <span class="text-xs opacity-70">RTX 4090 // 100 Billion /s</span>
+                <button onclick="startSimulation('iphone')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-[#39ff14]/50">
+                    <span class="font-bold text-sm">6. Modern iPhone</span>
+                    <span class="text-xs opacity-70">1 Billion /s</span>
                 </button>
                 
-                <button onclick="startSimulation('super')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:border-cyan-300">
-                    <span class="font-bold text-sm">Supercomputer</span>
-                    <span class="text-xs opacity-70">Exascale // 1 Quintillion /s</span>
+                <button onclick="startSimulation('xbox')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-[#39ff14]/60">
+                    <span class="font-bold text-sm">7. Xbox Series X</span>
+                    <span class="text-xs opacity-70">5 Billion /s</span>
                 </button>
-                <button onclick="startSimulation('quantum')" class="hw-btn hw-select py-3 px-3 rounded text-left flex flex-col border-purple-500 text-purple-400 hover:bg-purple-900/20 hover:border-purple-400">
-                    <span class="font-bold text-sm">Quantum Future</span>
-                    <span class="text-xs opacity-70">Grover's // 1 Sextillion /s</span>
+                <button onclick="startSimulation('gaming')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-[#39ff14]">
+                    <span class="font-bold text-sm">8. Gaming PC</span>
+                    <span class="text-xs opacity-70">50 Billion /s</span>
+                </button>
+                <button onclick="startSimulation('cloud')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-blue-400 text-blue-400 hover:bg-blue-900/20 hover:border-blue-300">
+                    <span class="font-bold text-sm">9. Cloud Cluster</span>
+                    <span class="text-xs opacity-70">5 Trillion /s</span>
+                </button>
+                <button onclick="startSimulation('super')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:border-cyan-300">
+                    <span class="font-bold text-sm">10. Supercomputer</span>
+                    <span class="text-xs opacity-70">1 Quadrillion /s</span>
+                </button>
+                <button onclick="startSimulation('botnet')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-pink-500 text-pink-400 hover:bg-pink-900/20 hover:border-pink-400">
+                    <span class="font-bold text-sm">11. Global Botnet</span>
+                    <span class="text-xs opacity-70">100 Quadrillion /s</span>
+                </button>
+                <button onclick="startSimulation('quantum')" class="hw-btn hw-select py-2 px-3 rounded text-left flex flex-col border-purple-500 text-purple-400 hover:bg-purple-900/20 hover:border-purple-400">
+                    <span class="font-bold text-sm">12. Quantum</span>
+                    <span class="text-xs opacity-70">1 Sextillion /s</span>
                 </button>
             </div>
         </div>
@@ -251,43 +260,44 @@
         const BASE = 62n;
         
         let pwdLength = 8;
-        let totalCombinations = BASE ** 8n; // ~218 Trillion
+        let totalCombinations = BASE ** 8n;
         
         let targetPassword = "";
-        let targetHashIndex = 0n; // The exact numerical index of our target
+        let targetHashIndex = 0n; 
 
         let isRunning = false;
         let isHalted = false;
         let animationInterval = null;
 
-        // DOM Elements
         const displayEl = document.getElementById('pwd-display');
         const terminalEl = document.getElementById('terminal');
         const statusEl = document.getElementById('access-status');
         const progressBarContainer = document.getElementById('progress-bar-container');
         const progressBar = document.getElementById('progress-bar');
         const etaDisplay = document.getElementById('eta-display');
+        const elapsedDisplay = document.getElementById('time-elapsed-display');
         const targetLabel = document.getElementById('target-label');
         const combsDisplay = document.getElementById('combinations-display');
         const btnSecurity = document.getElementById('btn-security');
         const btnHalt = document.getElementById('btn-halt');
         const hwSelectBtns = document.querySelectorAll('.hw-select');
 
-        // Hardware Profiles in hashes per second
+        // Exact hardware profiles mapped to BigInt safe strings/numbers
         const profiles = {
-            eniac: { name: "ENIAC (1945)", speed: 5000 },
-            tradic: { name: "TRADIC (1954)", speed: 1000000 },
-            pdp1: { name: "DEC PDP-1 (1959)", speed: 100000 },
-            agc: { name: "Apollo AGC (1966)", speed: 85000 },
-            school: { name: "School PC (5 yrs old)", speed: 500000000 }, // 500 Million
-            iphone: { name: "Modern iPhone", speed: 5000000000 }, // 5 Billion
-            xbox: { name: "Xbox Series X", speed: 20000000000 }, // 20 Billion
-            gaming: { name: "Gaming PC (RTX 4090)", speed: 100000000000 }, // 100 Billion
-            super: { name: "Supercomputer", speed: 1000000000000000000 }, // 1 Quintillion (1e18)
-            quantum: { name: "Quantum Computer", speed: 1000000000000000000000 } // 1 Sextillion (1e21)
+            eniac: { name: "ENIAC", speed: "100" },
+            tradic: { name: "TRADIC", speed: "1000" },
+            pdp1: { name: "DEC PDP-1", speed: "10000" },
+            agc: { name: "Apollo AGC", speed: "50000" },
+            school: { name: "School PC", speed: "50000000" },
+            iphone: { name: "Modern iPhone", speed: "1000000000" },
+            xbox: { name: "Xbox Series X", speed: "5000000000" },
+            gaming: { name: "Gaming PC", speed: "50000000000" },
+            cloud: { name: "Cloud Server Cluster", speed: "5000000000000" },
+            super: { name: "Supercomputer", speed: "1000000000000000" },
+            botnet: { name: "Global Botnet", speed: "100000000000000000" },
+            quantum: { name: "Quantum Future", speed: "1000000000000000000000" }
         };
 
-        // Convert a string back to its BigInt index
         function codeToBigInt(str) {
             let num = 0n;
             for (let i = 0; i < str.length; i++) {
@@ -297,7 +307,6 @@
             return num;
         }
 
-        // Convert a BigInt index to its corresponding Base62 string
         function bigIntToCode(num, length) {
             let str = "";
             let temp = num;
@@ -310,11 +319,11 @@
         }
 
         function toggleSecurity() {
-            if (isRunning) return; // Prevent changing while running
+            if (isRunning) return; 
             
             if (pwdLength === 8) {
                 pwdLength = 12;
-                totalCombinations = BASE ** 12n; // ~3.2 Sextillion
+                totalCombinations = BASE ** 12n; // ~3.22 Sextillion
                 btnSecurity.textContent = "SECURITY: 12-CHAR (EXTREME)";
                 btnSecurity.classList.add("border-orange-500", "text-orange-400");
                 btnSecurity.classList.remove("border-[#39ff14]", "text-[#39ff14]");
@@ -334,8 +343,8 @@
         function generateTarget() {
             targetPassword = "";
             
-            // Force the first character to be from the upper 50% of the alphabet 
-            // so the crack takes a meaningful portion of the total estimated time.
+            // Force the first character to be from the middle/upper alphabet 
+            // so we don't accidentally get an instant crack on fast machines
             let firstCharIndex = Math.floor(Math.random() * 31) + 31; 
             targetPassword += CHARS[firstCharIndex];
             
@@ -363,7 +372,6 @@
             terminalEl.scrollTop = terminalEl.scrollHeight;
         }
 
-        // FORMAT: X Years, X Days, X Hours, X Minutes, X Seconds
         function formatExactTime(totalSeconds) {
             if (totalSeconds === Infinity || totalSeconds > 1e9 * 31536000) {
                 return "OVER A BILLION YEARS";
@@ -391,7 +399,7 @@
             
             isRunning = false;
             isHalted = true;
-            clearInterval(animationInterval);
+            cancelAnimationFrame(animationInterval);
             
             btnHalt.disabled = true;
             btnSecurity.disabled = false;
@@ -408,7 +416,7 @@
         }
 
         function resetUI() {
-            if (animationInterval) clearInterval(animationInterval);
+            if (animationInterval) cancelAnimationFrame(animationInterval);
             
             displayEl.classList.remove('success-flash', 'text-[#ff003c]', 'glow-text-red');
             displayEl.classList.add('text-[#39ff14]', 'glow-text');
@@ -420,13 +428,14 @@
             progressBarContainer.classList.remove('hidden');
             progressBar.style.width = "0%";
             etaDisplay.textContent = "CALCULATING ETA...";
+            elapsedDisplay.textContent = "ELAPSED: 0.00s";
             combsDisplay.textContent = `0 / ${totalCombinations.toLocaleString()} ATTEMPTS`;
             
-            void displayEl.offsetWidth; // Reflow
+            void displayEl.offsetWidth;
         }
 
-        function triggerSuccess(exactTimeStr) {
-            if (animationInterval) clearInterval(animationInterval);
+        function triggerSuccess(exactTimeStr, exactElapsedStr) {
+            if (animationInterval) cancelAnimationFrame(animationInterval);
             
             displayEl.textContent = targetPassword;
             displayEl.classList.add('success-flash');
@@ -436,6 +445,7 @@
             
             progressBar.style.width = "100%";
             etaDisplay.textContent = `DECRYPTED IN: ${exactTimeStr}`;
+            elapsedDisplay.textContent = `ELAPSED: ${exactElapsedStr}s`;
             combsDisplay.textContent = `${targetHashIndex.toLocaleString()} / ${totalCombinations.toLocaleString()} ATTEMPTS`;
             
             setTimeout(() => { progressBarContainer.classList.add('hidden'); }, 1500);
@@ -465,63 +475,65 @@
             hwSelectBtns.forEach(btn => btn.disabled = true);
 
             const hwSpeedBigInt = BigInt(hw.speed);
-            
-            // ETA is calculated based on the TARGET position, not the total possible combinations
-            // This represents how long it will take to mathematically hit the exact index.
             const targetTimeSecondsNum = Number(targetHashIndex) / Number(hwSpeedBigInt);
+            const formattedSpeed = Number(hw.speed).toLocaleString();
 
             logMsg(`INITIALIZING TRUE SEQUENTIAL BRUTE FORCE ON [${hw.name}]...`);
-            logMsg(`PROCESSING SPEED: ${hw.speed.toLocaleString()} HASHES/SEC`);
+            logMsg(`PROCESSING SPEED: ${formattedSpeed} HASHES/SEC`);
             logMsg(`ESTIMATED COMPLETION: ${formatExactTime(targetTimeSecondsNum)}`);
 
-            // If it will crack instantly
+            // Handle instant crack
             if (targetTimeSecondsNum < 0.05) {
                 setTimeout(() => {
-                    if (!isHalted) triggerSuccess(formatExactTime(targetTimeSecondsNum));
-                }, 500);
+                    if (!isHalted) triggerSuccess(formatExactTime(targetTimeSecondsNum), "0.01");
+                }, 200);
                 return;
             }
 
             const startTime = performance.now();
+            let lastUpdate = 0;
             
-            animationInterval = setInterval(() => {
-                const elapsedMs = performance.now() - startTime;
+            function updateFrame(timestamp) {
+                if (!isRunning || isHalted) return;
+
+                const elapsedMs = timestamp - startTime;
                 
-                // Calculate exactly how many combinations have been checked based on elapsed time and hardware speed
-                // elapsedMs * speed / 1000 = total hashes evaluated
+                // Calculate exact combinations checked based on time * speed
                 const elapsedMsBigInt = BigInt(Math.floor(elapsedMs));
                 const hashesComputed = (elapsedMsBigInt * hwSpeedBigInt) / 1000n;
 
                 if (hashesComputed >= targetHashIndex) {
-                    // Reached the target combination!
-                    triggerSuccess(formatExactTime(targetTimeSecondsNum));
+                    const elapsedSecFinal = (elapsedMs / 1000).toFixed(2);
+                    triggerSuccess(formatExactTime(targetTimeSecondsNum), elapsedSecFinal);
                 } else {
-                    // Update visuals
                     displayEl.textContent = bigIntToCode(hashesComputed, pwdLength);
                     
-                    // Display percentage based on target index 
                     const percentage = (Number(hashesComputed) / Number(targetHashIndex)) * 100;
                     progressBar.style.width = `${Math.min(percentage, 100)}%`;
                     
-                    const remainingSeconds = targetTimeSecondsNum - (elapsedMs / 1000);
-                    
-                    if (targetTimeSecondsNum > 86400 * 365) {
-                        // Very slow hardware, static display
-                        etaDisplay.textContent = `ETA: ${formatExactTime(targetTimeSecondsNum)}`;
-                    } else {
-                        // Fast enough to show a live countdown
-                        etaDisplay.textContent = `ETA: ${formatExactTime(remainingSeconds)}`;
-                    }
-
-                    // Throttle the text updates for the attempts string as DOM updates are heavy
-                    if (Math.random() < 0.2) {
+                    // Throttle heavier UI updates to ~15fps to keep the string generation buttery smooth
+                    if (timestamp - lastUpdate > 66) {
+                        const remainingSeconds = targetTimeSecondsNum - (elapsedMs / 1000);
+                        const elapsedSecs = (elapsedMs / 1000).toFixed(2);
+                        
+                        elapsedDisplay.textContent = `ELAPSED: ${elapsedSecs}s`;
                         combsDisplay.textContent = `${hashesComputed.toLocaleString()} / ${totalCombinations.toLocaleString()} ATTEMPTS`;
+                        
+                        if (targetTimeSecondsNum > 86400 * 365) {
+                            etaDisplay.textContent = `ETA: ${formatExactTime(targetTimeSecondsNum)}`;
+                        } else {
+                            etaDisplay.textContent = `ETA: ${formatExactTime(remainingSeconds)}`;
+                        }
+                        lastUpdate = timestamp;
                     }
+                    
+                    animationInterval = requestAnimationFrame(updateFrame);
                 }
-            }, 50); // 20 FPS
+            }
+            
+            animationInterval = requestAnimationFrame(updateFrame);
         }
 
-        // Initialize target immediately
         window.onload = () => {
             btnSecurity.classList.add("border-[#39ff14]", "text-[#39ff14]");
             generateTarget();
